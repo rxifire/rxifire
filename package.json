@@ -1,10 +1,11 @@
 {
-  "name": "webpack-react-start",
+  "name": "rx-router",
   "version": "0.0.1",
   "description": "-",
   "main": "-",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "demo": "webpack-dev-server --mode development --open"
   },
   "author": "",
   "license": "ISC",
