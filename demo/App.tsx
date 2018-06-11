@@ -15,12 +15,16 @@ export interface UIEvents {
 }
 
 export const logic: Logic<Props, UIEvents> = ({ props, uiEvents }) =>
-  $.merge(
-    props,
-    uiEvents['click']
-      .do(x => console.log(x))
-      .ignoreElements()
-  )
+  props
+    .mergeMap((p) =>
+      $.timer(0, 1000)
+        .map((c) => ({ ...p, count: c }))
+    )
+    .delayWhen(x => $.timer(Math.random() * 3000)
+      .do(() => console.log(x))
+    )
+    .takeUntil(uiEvents['click'])
+    .repeat()
 
 export const view: View<UIEvents, Props> = (cb) => (ps) =>
   <div onClick={cb.click}>
