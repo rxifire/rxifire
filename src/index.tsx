@@ -37,12 +37,13 @@ export type Logic<Props, UIEvents = {}, UIState = Props, Contract extends eff.Ef
   (ps: LogicParams<Props, UIEvents, Contract>) =>
     Observable<UIState>
 
-export type View<UIEvents = {}, UIState = {}> = (cb: AsCallbacks<UIEvents>) => (s: UIState) => JSX.Element
+export type View<UIEvents = {}, UIState = {}, Contract extends eff.EffectsContract = {}> =
+  (cb: AsCallbacks<UIEvents>) => (s: UIState, eff: eff.Infos<Contract>) => JSX.Element
 
 export interface RxComponentProps<Props, UIEvents = {}, UIState = Props, Contract extends eff.EffectsContract = {}> {
   props: Props
   config: ConfigInternal<UIEvents>
-  view: View<UIEvents, UIState>
+  view: View<UIEvents, UIState, Contract>
   effects: eff.Effects<Contract>
   logic (ps: LogicParams<any, any, any>): Observable<any>
 }
@@ -93,7 +94,7 @@ export class RxComponent<Props, UIEvents, UIState, Contract extends eff.EffectsC
   effects: eff.Effects<Contract> = {} as any
   effInfos: eff.Infos<Contract> = {} as any
 
-  View: (s: UIState) => JSX.Element
+  View: (s: UIState, eff: eff.Infos<Contract>) => JSX.Element
   _state: UIState = {} as any
   sub!: { unsubscribe: () => void, add: any }
 
@@ -108,7 +109,7 @@ export class RxComponent<Props, UIEvents, UIState, Contract extends eff.EffectsC
 
     Object.keys(p.effects).forEach(e => {
       const eff = p.effects[e]
-      this.effInfos[e] = new EffInfo(this.forceUpdate)
+      this.effInfos[e] = new EffInfo(() => this.forceUpdate)
 
       this.effects[e] = p => {
         return eff(p)
@@ -141,7 +142,7 @@ export class RxComponent<Props, UIEvents, UIState, Contract extends eff.EffectsC
   }
 
   render () {
-    return this.View(this._state)
+    return this.View(this._state, this.effInfos)
   }
 }
 
@@ -152,10 +153,14 @@ function configWithDefaults<UIEvents> (cfg?: Config<UIEvents>): ConfigInternal<U
   return Object.assign(op, cfg)
 }
 
-export const createRxComponent = <Props, UIEvents = {}, UIState = Props, Contract extends eff.EffectsContract = {}>
+export const createRxComponent = <
+  Props,
+  UIEvents = {},
+  UIState = Props,
+  Contract extends eff.EffectsContract = {}>
   (
-  logic: Logic<Props, UIEvents, UIState>,
-  view: View<UIEvents, UIState>,
+  logic: Logic<Props, UIEvents, UIState, Contract>,
+  view: View<UIEvents, UIState, Contract>,
   effects: eff.Effects<Contract>,
   config?: Config<UIEvents>
   ) =>
