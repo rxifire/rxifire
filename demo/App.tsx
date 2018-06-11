@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as Rx from 'rxjs'
 
-import { createRxComponent, Logic, View, effects } from '../src'
+import { createRxComponent, Logic, View, effects as eff } from '../src'
 
 const $ = Rx.Observable
 
@@ -14,9 +14,14 @@ export interface UIEvents {
   click: any
 }
 
-export interface EffectsContract extends effects.EffectsContract {
+export interface EffectsContract extends eff.EffectsContract {
   login: [number, boolean, null]
   logout: [void, boolean, null]
+}
+
+export const effects: eff.Effects<EffectsContract> = {
+  login: (p) => $.of(true).delay(1000),
+  logout: () => $.of(true).delay(1000)
 }
 
 export const logic: Logic<Props, UIEvents> = ({ props, uiEvents }) =>
@@ -34,6 +39,6 @@ export const view: View<UIEvents, Props> = (cb) => (ps) =>
     <button onClick={cb.click}>reset</button>
   </div>
 
-export default createRxComponent<Props, UIEvents>(logic, view, {
+export default createRxComponent<Props, UIEvents, Props, EffectsContract>(logic, view, effects, {
   uiEventsNames: ['click']
 })
