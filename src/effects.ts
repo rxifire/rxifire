@@ -15,13 +15,17 @@ export type Effects<T extends EffectsContract> = {
   [k in keyof T]: Effect<T[k][0], T[k][1]>
 }
 
+export type EffectsIn<T extends EffectsContract> = {
+  [k in keyof T]: T[k][0]
+}
+
 // export type Errors<T extends EffectsContract> = {
 //   [k in keyof T]: T[k][2]
 // }
 
 // todo: figure out if parallel fires makes much sense
 // exhaust ignores fires if one in-progress
-export type Mode = 'exhaust' | 'switch' // | 'merge'
+export type Mode = 'exhaust' | 'switch'
 
 export type Infos<T extends EffectsContract> = {
   [k in keyof T]: Info<T[k][0], T[k][1], T[k][2]>
@@ -57,19 +61,18 @@ export type Config<Effs extends EffectsContract> = {
   }
 }
 
-export type Status = 'active' | 'inactive' | 'in-progress' | 'error'
+export type Status = 'active' | 'inactive' | 'in-progress' | 'success' | 'error'
 
-export interface Info<P, R, E> {
+export interface Info<P, R, E> extends Control {
   status: Status
-  canFire: boolean // true if active or error (or in-progress in case of `switch`)
+  // canFire: boolean // true if active or error (or in-progress in case of `switch`)
 
-  isActive: boolean
-  isInactive: boolean
-  isInProgress: boolean
+  isStatus: (s: Status) => boolean
 
   inProgressInfo?: FireInfo<P, R, E> // most-recently fired in case of `merge`
   // inProgressInfos: FireInfo[] // todo: when `merge` - ideally use conditional types
 
+  value?: R
   error?: E
   history?: FireInfo<P, R, E>[] // entities mutable
   // errorCount?: number
@@ -78,6 +81,7 @@ export interface Info<P, R, E> {
 export interface Control {
   activate (): void
   desactivate (): void // stops in progress
+  reset (): void
   clearError (): void
   clearHistory (): void
 }

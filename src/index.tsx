@@ -5,6 +5,7 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject'
 import { Subject } from 'rxjs/Subject'
 
 import * as eff from './effects'
+
 export {
   eff as effects
 }
@@ -17,6 +18,10 @@ export type AsSubjects<T extends {}> = {
   [k in keyof T]: Subject<T[k]>
 }
 
+export type AsBehaviors<T extends {}> = {
+  [k in keyof T]: BehaviorSubject<T[k]>
+}
+
 export type AsCallbacks<T extends {}> = {
   [k in keyof T]: (k: T[k]) => void
 }
@@ -25,8 +30,7 @@ export interface LogicParams<Props, UIEvents, T extends eff.EffectsContract> {
   props: Observable<Props>
   uiEvents: AsObservables<UIEvents>
   effects: eff.Effects<T>
-  effControls: eff.Controls<T>
-  effInfos: AsObservables<eff.Infos<T>>
+  effInfos: eff.Infos<T>
 }
 
 export type Logic<Props, UIEvents = {}, UIState = Props, Contract extends eff.EffectsContract = {}> =
@@ -53,24 +57,69 @@ export interface ConfigInternal<UIEvents> extends ConfigOptional<UIEvents>, Conf
 
 export interface Config<UIEvents> extends Partial<ConfigOptional<UIEvents>>, ConfigRequired { }
 
+export class EffInfo implements eff.Info<any, any, any> {
+  status: eff.Status = 'active'
+  error: any
+  value: any
+
+  constructor (private _afterUpdate: () => void) {}
+
+  isStatus = (s: eff.Status) => s === this.status
+
+  activate = () => this.updateStatus('active')
+  desactivate = () => this.updateStatus('inactive')
+  reset = () => {
+    this.status = 'active'
+    this.error = undefined
+    this.value = undefined
+    this._afterUpdate()
+  }
+  clearError = () => {
+    this.error = undefined
+    this._afterUpdate()
+  }
+  clearHistory = () => true
+
+  private updateStatus = (s: eff.Status) => {
+    this.status = s
+    this._afterUpdate()
+  }
+}
+
 export class RxComponent<Props, UIEvents, UIState, Contract extends eff.EffectsContract> extends
   React.Component<RxComponentProps<Props, UIEvents, UIState, Contract>> {
   propsSub: BehaviorSubject<Props>
   uiEventsSub: AsSubjects<UIEvents> = {} as any
   uiEventsCb: AsCallbacks<UIEvents> = {} as any
+
+  fires: AsSubjects<eff.EffectsIn<Contract>> = {} as any
+  effects: eff.Effects<Contract> = {} as any
+  effInfos: eff.Infos<Contract> = {} as any
+
   View: (s: UIState) => JSX.Element
   _state: UIState = {} as any
-  sub!: { unsubscribe: () => void }
+  sub!: { unsubscribe: () => void, add: any }
 
   constructor (p: RxComponentProps<Props, UIEvents, UIState, Contract>) {
     super(p)
     this.propsSub = new BehaviorSubject<Props>(this.props.props)
+
     p.config.uiEventsNames.forEach(n => {
       this.uiEventsSub[n] = new Subject<UIEvents[keyof UIEvents]>()
       this.uiEventsCb[n] = this.uiEventsSub[n].next.bind(this.uiEventsSub[n])
     })
+
+    Object.keys(p.effects).forEach(e => {
+      const eff = p.effects[e]
+      this.effInfos[e] = new EffInfo(this.forceUpdate)
+
+      this.effects[e] = p => {
+        return eff(p)
+      }
+    })
+
     this.View = p.view(this.uiEventsCb)
-    console.log(p)
+
   }
 
   componentWillReceiveProps (p: RxComponentProps<Props, UIEvents, UIState, Contract>) {
@@ -81,9 +130,8 @@ export class RxComponent<Props, UIEvents, UIState, Contract extends eff.EffectsC
     this.sub = ((this.props.logic && this.props.logic({
       props: this.propsSub,
       uiEvents: this.uiEventsSub,
-      effects: {},
-      effControls: {},
-      effInfos: {}
+      effects: this.effects,
+      effInfos: this.effInfos
     })) || this.propsSub)
       .subscribe(s => {
         this._state = s

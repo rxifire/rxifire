@@ -24,14 +24,15 @@ export const effects: eff.Effects<EffectsContract> = {
   logout: () => $.of(true).delay(1000)
 }
 
-export const logic: Logic<Props, UIEvents> = ({ props, uiEvents }) =>
+export const logic: Logic<Props, UIEvents> = ({ props, uiEvents, effects, effInfos }) =>
   props
     .mergeMap((p) =>
       $.timer(0, 1000)
         .map((c) => ({ ...p, count: c }))
     )
+    .do(() => console.log(effects, effInfos))
     .takeUntil(uiEvents.click)
-    .repeat()
+    .repeat(1)
 
 export const view: View<UIEvents, Props> = (cb) => (ps) =>
   <div>
