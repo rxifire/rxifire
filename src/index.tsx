@@ -4,8 +4,6 @@ import { Observable } from 'rxjs/Observable'
 import { BehaviorSubject } from 'rxjs/BehaviorSubject'
 import { Subject } from 'rxjs/Subject'
 
-import { tap } from 'rxjs/operators/tap'
-
 export type AsObservables<T extends {}> = {
   [k in keyof T]: Observable<T[k]>
 }
@@ -25,9 +23,9 @@ export interface LogicParams<Props, UIEvents> {
   }
 }
 
-export type Logic<Props, UIEvents, UIState> = (ps: LogicParams<Props, UIEvents>) => Observable<UIState>
+export type Logic<Props, UIEvents = {}, UIState = Props> = (ps: LogicParams<Props, UIEvents>) => Observable<UIState>
 
-export type View<UIEvents, UIState> = (cb: AsCallbacks<UIEvents>) => (s: UIState) => JSX.Element
+export type View<UIEvents = {}, UIState = {}> = (cb: AsCallbacks<UIEvents>) => (s: UIState) => JSX.Element
 
 export interface RxComponentProps<Props, UIEvents = {}, UIState = Props>  {
   view: View<UIEvents, UIState>
@@ -49,23 +47,20 @@ export interface Config<UIEvents> extends Partial<ConfigOptional<UIEvents>>, Con
 export class RxComponent<Props, UIEvents, UIState> extends
   React.Component<RxComponentProps<Props, UIEvents, UIState>> {
   propsSub: BehaviorSubject<Props>
-  uiEventsSub: AsSubjects<UIEvents>
-  uiEventsCb: AsCallbacks<UIEvents>
+  uiEventsSub: AsSubjects<UIEvents> = {} as any
+  uiEventsCb: AsCallbacks<UIEvents> = {} as any
   View: (s: UIState) => JSX.Element
+  _state: UIState = {} as any
   sub!: { unsubscribe: () => void }
 
   constructor (p: RxComponentProps<Props, UIEvents, UIState>) {
     super(p)
-    this.View = p.view({} as any)
     this.propsSub = new BehaviorSubject<Props>(this.props.props)
-    this.uiEventsSub = p.config.uiEventsNames.reduce((acc, n) => {
-      acc[n] = new Subject()
-      return acc
-    }, {} as AsSubjects<UIEvents>)
-    this.uiEventsCb = p.config.uiEventsNames.reduce((acc, n) => {
-      acc[n] = v => this.uiEventsSub[n].next(v)
-      return acc
-    }, {} as AsCallbacks<UIEvents>)
+    p.config.uiEventsNames.forEach(n => {
+      this.uiEventsSub[n] = new Subject<UIEvents[keyof UIEvents]>()
+      this.uiEventsCb[n] = this.uiEventsSub[n].next.bind(this.uiEventsSub[n])
+    })
+    this.View = p.view(this.uiEventsCb)
   }
 
   componentWillReceiveProps (p: RxComponentProps<Props, UIEvents, UIState>) {
@@ -75,12 +70,12 @@ export class RxComponent<Props, UIEvents, UIState> extends
   componentDidMount () {
     this.sub = ((this.props.logic && this.props.logic({
       props: this.propsSub,
-      uiEvents: null as any
+      uiEvents: this.uiEventsSub
     })) || this.propsSub)
-      .pipe(
-        tap(p => this.setState(p))
-      )
-        .subscribe()
+      .subscribe(s => {
+        this._state = s
+        this.forceUpdate()
+      })
   }
 
   componentWillUnmount () {
@@ -88,7 +83,7 @@ export class RxComponent<Props, UIEvents, UIState> extends
   }
 
   render () {    
-    return <this.View />
+    return <this.View {...this._state} />
   }
 }
 
