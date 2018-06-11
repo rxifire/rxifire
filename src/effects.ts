@@ -1,14 +1,25 @@
 import { Observable } from 'rxjs/Observable'
 
-// todo: incorporate Error type
-export type Effect<P, R> = (params: P) => (Promise<R> | Observable<R>) // todo: add progress update
+// todo: add progress update
+export type Effect<P, R> = (params: P) => (Promise<R> | Observable<R>)
 
-export type Eff = Effect<any, any>
+export type EffectBase = Effect<any, any>
 
-export type Effects = {
-  [k: string]: Effect<any, any>
+// ideally we could infer params from the function itself
+// seems to be impossible currently, but maybe ?
+export type EffectsContract = {
+  [k: string]: [any, any, any] // ParamsIn, Out, Error
 }
 
+export type Effects<T extends EffectsContract> = {
+  [k in keyof EffectsContract]: Effect<EffectsContract[k][0], EffectsContract[k][1]>
+}
+
+export type Errors<T extends EffectsContract> = {
+  [k in keyof EffectsContract]: EffectsContract[k][2]
+}
+
+// todo: figure out if parallel fires makes much sense
 // exhaust ignores fires if one in-progress
 export type Mode = 'exhaust' | 'switch' // | 'merge'
 
@@ -24,7 +35,7 @@ export interface FireInfo<P, R> {
   duration?: number
 }
 
-export type Config<Effs extends Effects> = {
+export type Config<Effs extends EffectsContract> = {
   [k in keyof Effs]: {
     mode?: Mode
     name?: string
@@ -50,17 +61,15 @@ export interface Info<P, R> {
   inProgressInfo?: FireInfo<P, R> // most-recently fired in case of `merge`
   // inProgressInfos: FireInfo[] // todo: when `merge` - ideally use conditional types
 
-  // requires keep history
-  // history?: FireInfo[]
+  history?: FireInfo<P, R>[] // entities mutable
   // errorCount?: number
 }
 
 export interface EffectControl<P, R> {
-  fire: (params: P) => Observable<R>
+  fire: Effect<P, R> // fires always on a next tick
 
   activate (): void
   inactivate (): void // stops in progress
   clearError (): void
-
-  // clearHistory: () => void
+  clearHistory (): void
 }

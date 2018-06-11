@@ -4,6 +4,11 @@ import { Observable } from 'rxjs/Observable'
 import { BehaviorSubject } from 'rxjs/BehaviorSubject'
 import { Subject } from 'rxjs/Subject'
 
+import * as eff from './effects'
+export {
+  eff as effects
+}
+
 export type AsObservables<T extends {}> = {
   [k in keyof T]: Observable<T[k]>
 }
@@ -94,7 +99,7 @@ function configWithDefaults <UIEvents> (cfg?: Config<UIEvents>): ConfigInternal<
   return Object.assign(op, cfg)
 }
 
-export const rxComponent = <Props, UIEvents = {}, UIState = Props>
+export const createRxComponent = <Props, UIEvents = {}, UIState = Props>
   (
     logic: Logic<Props, UIEvents, UIState>,
     view: View<UIEvents, UIState>,
