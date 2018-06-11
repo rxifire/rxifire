@@ -5,32 +5,32 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject'
 
 import { tap } from 'rxjs/operators/tap'
 
-interface RouteProps<Props extends {} = {}, Data extends {} = Props, ViewCb extends ViewCbBase = {}> {
-  view: (props: any) => JSX.Element
-  logic?(params: LogicParams<any, any>): Observable<any>
+interface RxComponentProps<Props, UIState = Props, UIEvents = {}>  {
+  view: View<UIState, UIEvents>
+  logic(params: LogicParams<any, any>): Observable<any>
   props: Props
 }
 
-class Route<P, D, V extends ViewCbBase> extends React.Component<RouteProps<P, D, V>, any> {
+class RxComponent<P, S, V> extends React.Component<RxComponentProps<P, S, V>, any> {
   propsSub: BehaviorSubject<P>
-  View: (data: D & { on: V }) => JSX.Element
+  View: (data: S & { on: V }) => JSX.Element
   sub: any
   on = {} as V
 
-  constructor (p: RouteProps<P, D, V>) {
+  constructor (p: RxComponentProps<P, S, V>) {
     super(p)
-    this.View = p.view
+    this.View = p.view({} as any)
     this.propsSub = new BehaviorSubject<P>(this.props.props)
   }
 
-  componentWillReceiveProps (p: RouteProps<P, D, V>) {
+  componentWillReceiveProps (p: RxComponentProps<P, S, V>) {
     this.propsSub.next(p.props)
   }
 
   componentDidMount () {
     this.sub = ((this.props.logic && this.props.logic({
       props: this.propsSub,
-      viewCb: null as any
+      uiEvents: null as any
     })) || this.propsSub)
       .pipe(
         tap(p => this.setState(p))
@@ -51,23 +51,34 @@ class Route<P, D, V extends ViewCbBase> extends React.Component<RouteProps<P, D,
 }
 
 export interface ViewCbBase {
-  [k: string]: (v: any) => void
+  [k: string]: ([...any]) => void
 }
 
-export interface LogicParams<Props, ViewCb extends ViewCbBase> {
+export interface LogicParams<Props, UIEvents> {
   props: Observable<Props>
-  viewCb: { [k in keyof ViewCb]: Observable<ViewCb[k]> }
+  uiEvents:  {
+    [k in keyof UIEvents]: Observable<UIEvents[k]>
+  }
 }
 
-export interface RouteConfig<Props extends {} = {}, Data extends {} = Props, ViewCb extends ViewCbBase = {}> {
-  view: (data: Data & { on: ViewCb }) => JSX.Element
-  logic?(params: LogicParams<Props, ViewCb>): Observable<Data>
+export type View<UIState, UIEvents> = (cb: {
+  [k in keyof UIEvents]: (k: UIEvents[k]) => void
+}) => (s: UIState) => JSX.Element
+
+export interface RxComponentConfig<UIEvents> {
+  uiEventsNames?: (keyof UIEvents)[]
 }
 
-export const createRoute = <Props, Data = Props, ViewCb extends ViewCbBase = {}> (cfg: RouteConfig<Props, Data, ViewCb>) =>
+export const rxComponent = <Props, UIState = Props, UIEvents = {}> 
+  (
+    logic: (ps: LogicParams<Props, UIEvents>) => Observable<UIEvents>,
+    view: View<UIState, UIEvents>,
+    cfg?: RxComponentConfig<UIEvents>
+  ) =>
+  //(cfg: RouteConfig<Props, Data, ViewCb>) =>
   (p: Props) =>
-    <Route
+    <RxComponent
       props={p}
-      view={cfg.view}
-      logic={cfg.logic as any}
+      view={view}
+      logic={logic as any}
     />
