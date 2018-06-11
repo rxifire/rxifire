@@ -5,13 +5,37 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject'
 
 import { tap } from 'rxjs/operators/tap'
 
-interface RxComponentProps<Props, UIState = Props, UIEvents = {}>  {
-  view: View<UIState, UIEvents>
-  logic(params: LogicParams<any, any>): Observable<any>
-  props: Props
+export interface LogicParams<Props, UIEvents> {
+  props: Observable<Props>
+  uiEvents:  {
+    [k in keyof UIEvents]: Observable<UIEvents[k]>
+  }
 }
 
-class RxComponent<P, S, V> extends React.Component<RxComponentProps<P, S, V>, any> {
+export type Logic<Props, UIEvents, UIState> = (ps: LogicParams<Props, UIEvents>) => Observable<UIState>
+
+export type View<UIState, UIEvents> = (cb: {
+  [k in keyof UIEvents]: (k: UIEvents[k]) => void
+}) => (s: UIState) => JSX.Element
+
+export interface RxComponentProps<Props, UIState = Props, UIEvents = {}>  {
+  view: View<UIState, UIEvents>
+  logic(ps: LogicParams<any, any>): Observable<any>
+  props: Props
+  config: ConfigInternal<UIEvents>
+}
+
+export interface ConfigOptional<UIEvents> {
+  uiEventsNames: (keyof UIEvents)[] // ideally they were just infered from types - but not support at the moment
+}
+
+export interface ConfigRequired {}
+
+export interface ConfigInternal<UIEvents> extends ConfigOptional<UIEvents>, ConfigRequired {}
+
+export interface Config<UIEvents> extends Partial<ConfigOptional<UIEvents>>, ConfigRequired {}
+
+export class RxComponent<P, S, V> extends React.Component<RxComponentProps<P, S, V>, any> {
   propsSub: BehaviorSubject<P>
   View: (data: S & { on: V }) => JSX.Element
   sub: any
@@ -36,49 +60,34 @@ class RxComponent<P, S, V> extends React.Component<RxComponentProps<P, S, V>, an
         tap(p => this.setState(p))
       )
         .subscribe()
-
   }
 
   componentWillUnmount () {
     this.sub && this.sub.unsubscribe()
   }
 
-  render () {
-    if (!this.propsSub) return null
-    
+  render () {    
     return <this.View {...this.state} on={this.on} />
   }
 }
 
-export interface ViewCbBase {
-  [k: string]: ([...any]) => void
-}
-
-export interface LogicParams<Props, UIEvents> {
-  props: Observable<Props>
-  uiEvents:  {
-    [k in keyof UIEvents]: Observable<UIEvents[k]>
+function configWithDefaults <UIEvents>(cfg?: Config<UIEvents>): ConfigInternal<UIEvents> {
+  const op: ConfigOptional<UIEvents> = {
+    uiEventsNames: []
   }
+  return Object.assign(op, cfg)
 }
 
-export type View<UIState, UIEvents> = (cb: {
-  [k in keyof UIEvents]: (k: UIEvents[k]) => void
-}) => (s: UIState) => JSX.Element
-
-export interface RxComponentConfig<UIEvents> {
-  uiEventsNames?: (keyof UIEvents)[]
-}
-
-export const rxComponent = <Props, UIState = Props, UIEvents = {}> 
+export const rxComponent = <Props, UIEvents = {}, UIState = Props> 
   (
-    logic: (ps: LogicParams<Props, UIEvents>) => Observable<UIEvents>,
+    logic: Logic<Props, UIEvents, UIState>,
     view: View<UIState, UIEvents>,
-    cfg?: RxComponentConfig<UIEvents>
+    config?: Config<UIEvents>
   ) =>
-  //(cfg: RouteConfig<Props, Data, ViewCb>) =>
   (p: Props) =>
     <RxComponent
       props={p}
       view={view}
       logic={logic as any}
+      config={configWithDefaults(config)}
     />
