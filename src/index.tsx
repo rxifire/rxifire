@@ -18,7 +18,7 @@ export type AsCallbacks<T extends {}> = {
 
 export interface LogicParams<Props, UIEvents> {
   props: Observable<Props>
-  uiEvents:  {
+  uiEvents: {
     [k in keyof UIEvents]: Observable<UIEvents[k]>
   }
 }
@@ -27,11 +27,11 @@ export type Logic<Props, UIEvents = {}, UIState = Props> = (ps: LogicParams<Prop
 
 export type View<UIEvents = {}, UIState = {}> = (cb: AsCallbacks<UIEvents>) => (s: UIState) => JSX.Element
 
-export interface RxComponentProps<Props, UIEvents = {}, UIState = Props>  {
-  view: View<UIEvents, UIState>
-  logic(ps: LogicParams<any, any>): Observable<any>
+export interface RxComponentProps<Props, UIEvents = {}, UIState = Props> {
   props: Props
   config: ConfigInternal<UIEvents>
+  view: View<UIEvents, UIState>
+  logic (ps: LogicParams<any, any>): Observable<any>
 }
 
 export interface ConfigOptional<UIEvents> {
@@ -82,19 +82,19 @@ export class RxComponent<Props, UIEvents, UIState> extends
     this.sub && this.sub.unsubscribe()
   }
 
-  render () {    
+  render () {
     return <this.View {...this._state} />
   }
 }
 
-function configWithDefaults <UIEvents>(cfg?: Config<UIEvents>): ConfigInternal<UIEvents> {
+function configWithDefaults <UIEvents> (cfg?: Config<UIEvents>): ConfigInternal<UIEvents> {
   const op: ConfigOptional<UIEvents> = {
     uiEventsNames: []
   }
   return Object.assign(op, cfg)
 }
 
-export const rxComponent = <Props, UIEvents = {}, UIState = Props> 
+export const rxComponent = <Props, UIEvents = {}, UIState = Props>
   (
     logic: Logic<Props, UIEvents, UIState>,
     view: View<UIEvents, UIState>,
