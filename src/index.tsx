@@ -2,8 +2,21 @@ import * as React from 'react'
 
 import { Observable } from 'rxjs/Observable'
 import { BehaviorSubject } from 'rxjs/BehaviorSubject'
+import { Subject } from 'rxjs/Subject'
 
 import { tap } from 'rxjs/operators/tap'
+
+export type AsObservables<T extends {}> = {
+  [k in keyof T]: Observable<T[k]>
+}
+
+export type AsSubjects<T extends {}> = {
+  [k in keyof T]: Subject<T[k]>
+}
+
+export type AsCallbacks<T extends {}> = {
+  [k in keyof T]: (k: T[k]) => void
+}
 
 export interface LogicParams<Props, UIEvents> {
   props: Observable<Props>
@@ -14,12 +27,10 @@ export interface LogicParams<Props, UIEvents> {
 
 export type Logic<Props, UIEvents, UIState> = (ps: LogicParams<Props, UIEvents>) => Observable<UIState>
 
-export type View<UIState, UIEvents> = (cb: {
-  [k in keyof UIEvents]: (k: UIEvents[k]) => void
-}) => (s: UIState) => JSX.Element
+export type View<UIEvents, UIState> = (cb: AsCallbacks<UIEvents>) => (s: UIState) => JSX.Element
 
-export interface RxComponentProps<Props, UIState = Props, UIEvents = {}>  {
-  view: View<UIState, UIEvents>
+export interface RxComponentProps<Props, UIEvents = {}, UIState = Props>  {
+  view: View<UIEvents, UIState>
   logic(ps: LogicParams<any, any>): Observable<any>
   props: Props
   config: ConfigInternal<UIEvents>
@@ -35,19 +46,29 @@ export interface ConfigInternal<UIEvents> extends ConfigOptional<UIEvents>, Conf
 
 export interface Config<UIEvents> extends Partial<ConfigOptional<UIEvents>>, ConfigRequired {}
 
-export class RxComponent<P, S, V> extends React.Component<RxComponentProps<P, S, V>, any> {
-  propsSub: BehaviorSubject<P>
-  View: (data: S & { on: V }) => JSX.Element
-  sub: any
-  on = {} as V
+export class RxComponent<Props, UIEvents, UIState> extends
+  React.Component<RxComponentProps<Props, UIEvents, UIState>> {
+  propsSub: BehaviorSubject<Props>
+  uiEventsSub: AsSubjects<UIEvents>
+  uiEventsCb: AsCallbacks<UIEvents>
+  View: (s: UIState) => JSX.Element
+  sub!: { unsubscribe: () => void }
 
-  constructor (p: RxComponentProps<P, S, V>) {
+  constructor (p: RxComponentProps<Props, UIEvents, UIState>) {
     super(p)
     this.View = p.view({} as any)
-    this.propsSub = new BehaviorSubject<P>(this.props.props)
+    this.propsSub = new BehaviorSubject<Props>(this.props.props)
+    this.uiEventsSub = p.config.uiEventsNames.reduce((acc, n) => {
+      acc[n] = new Subject()
+      return acc
+    }, {} as AsSubjects<UIEvents>)
+    this.uiEventsCb = p.config.uiEventsNames.reduce((acc, n) => {
+      acc[n] = v => this.uiEventsSub[n].next(v)
+      return acc
+    }, {} as AsCallbacks<UIEvents>)
   }
 
-  componentWillReceiveProps (p: RxComponentProps<P, S, V>) {
+  componentWillReceiveProps (p: RxComponentProps<Props, UIEvents, UIState>) {
     this.propsSub.next(p.props)
   }
 
@@ -67,7 +88,7 @@ export class RxComponent<P, S, V> extends React.Component<RxComponentProps<P, S,
   }
 
   render () {    
-    return <this.View {...this.state} on={this.on} />
+    return <this.View />
   }
 }
 
@@ -81,7 +102,7 @@ function configWithDefaults <UIEvents>(cfg?: Config<UIEvents>): ConfigInternal<U
 export const rxComponent = <Props, UIEvents = {}, UIState = Props> 
   (
     logic: Logic<Props, UIEvents, UIState>,
-    view: View<UIState, UIEvents>,
+    view: View<UIEvents, UIState>,
     config?: Config<UIEvents>
   ) =>
   (p: Props) =>
