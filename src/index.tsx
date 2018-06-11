@@ -57,31 +57,28 @@ export interface ConfigInternal<UIEvents> extends ConfigOptional<UIEvents>, Conf
 
 export interface Config<UIEvents> extends Partial<ConfigOptional<UIEvents>>, ConfigRequired { }
 
-export class EffInfo implements eff.Info<any, any, any> {
+// todo: temporarily here - convert to immutable, event based solution
+export class EffInfo implements eff.Info<any, any> {
   status: eff.Status = 'active'
-  error: any
-  value: any
+  error?: any
+  value?: any
 
-  constructor (private _afterUpdate: () => void) {}
+  constructor (private _afterUpdate: () => void) { }
 
-  isStatus = (s: eff.Status) => s === this.status
+  is = (s: eff.Status) => s === this.status
 
-  activate = () => this.updateStatus('active')
-  desactivate = () => this.updateStatus('inactive')
-  reset = () => {
-    this.status = 'active'
-    this.error = undefined
-    this.value = undefined
-    this._afterUpdate()
-  }
-  clearError = () => {
-    this.error = undefined
-    this._afterUpdate()
-  }
-  clearHistory = () => true
+  resetTo = (s: 'active' | 'inactive') => this._updateStatus(s)
 
-  private updateStatus = (s: eff.Status) => {
+  private _updateStatus = (s: eff.Status, v?: any) => {
     this.status = s
+
+    if (s === 'error') {
+      this.error = v
+    } else {
+      this.error = undefined
+      this.value = v
+    }
+
     this._afterUpdate()
   }
 }

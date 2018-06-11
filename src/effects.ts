@@ -19,69 +19,69 @@ export type EffectsIn<T extends EffectsContract> = {
   [k in keyof T]: T[k][0]
 }
 
+export type Infos<T extends EffectsContract> = {
+  [k in keyof T]: Info<T[k][1], T[k][2]>
+}
+
+export type Status = 'active' | 'inactive' | 'in-progress' | 'success' | 'error'
+
+export interface Info<R, E> {
+  status: Status
+  result?: R // in-case of success
+  error?: E // in-case of error
+
+  is: (s: Status) => boolean
+
+  resetTo (s: 'active' | 'inactive'): void
+}
+
+// TODO - review and most likely delete - keep it simple
+
+// export type Controls<T extends EffectsContract> = {
+//   [k in keyof T]: Control<any>
+// }
+
+// export interface Control<P> {
+//   // params: Observable<P>
+//   // valid: Observable<boolean>
+
+//   // activate (): void
+//   // desactivate (): void // stops in progress
+
+//   // clearError (): void
+//   // clearHistory (): void
+// }
+
 // export type Errors<T extends EffectsContract> = {
 //   [k in keyof T]: T[k][2]
 // }
 
 // todo: figure out if parallel fires makes much sense
 // exhaust ignores fires if one in-progress
-export type Mode = 'exhaust' | 'switch'
+// export type Mode = 'exhaust' | 'switch'
 
-export type Infos<T extends EffectsContract> = {
-  [k in keyof T]: Info<T[k][0], T[k][1], T[k][2]>
-}
+// export interface FireInfo<P, R, E> {
+//   params: P
+//   result?: R
+//   error?: E
 
-export type Controls<T extends EffectsContract> = {
-  [k in keyof T]: Control
-}
+//   firedAt: Date // todo: investigate how to make it working with Rx-Schedulers
+//   successAt?: Date
+//   errorAt?: Date
 
-export interface FireInfo<P, R, E> {
-  params: P
-  result?: R
-  error?: E
+//   // counter: number // how many times was already fired
+//   // duration?: number
+// }
 
-  firedAt: Date // todo: investigate how to make it working with Rx-Schedulers
-  successAt?: Date
-  errorAt?: Date
+// export type Config<Effs extends EffectsContract> = {
+//   [k in keyof Effs]: {
+//     mode?: Mode
+//     name?: string
+//     initialStatus: 'active' | 'inactive'
+//     // timeoutMs?: number // never
+//     // autoClearErrorMs?: number // Infinity
+//     // canFireWithError?: boolean
 
-  counter: number // how many times was already fired
-  // duration?: number
-}
-
-export type Config<Effs extends EffectsContract> = {
-  [k in keyof Effs]: {
-    mode?: Mode
-    name?: string
-    initialStatus: 'active' | 'inactive'
-    // timeoutMs?: number // never
-    // autoClearErrorMs?: number // Infinity
-    // canFireWithError?: boolean
-
-    // keepHistory?: boolean
-  }
-}
-
-export type Status = 'active' | 'inactive' | 'in-progress' | 'success' | 'error'
-
-export interface Info<P, R, E> extends Control {
-  status: Status
-  // canFire: boolean // true if active or error (or in-progress in case of `switch`)
-
-  isStatus: (s: Status) => boolean
-
-  inProgressInfo?: FireInfo<P, R, E> // most-recently fired in case of `merge`
-  // inProgressInfos: FireInfo[] // todo: when `merge` - ideally use conditional types
-
-  value?: R
-  error?: E
-  history?: FireInfo<P, R, E>[] // entities mutable
-  // errorCount?: number
-}
-
-export interface Control {
-  activate (): void
-  desactivate (): void // stops in progress
-  reset (): void
-  clearError (): void
-  clearHistory (): void
-}
+//     // keepHistory?: boolean
+//   }
+// }
