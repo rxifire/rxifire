@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs/Observable'
 
 // todo: add progress update
-export type Effect<P, R> = (params: P) => Observable<R>
+export type Effect<P, R> = (params: P) => (Observable<R> | Promise<R>)
 
 export type EffectBase = Effect<any, any>
 

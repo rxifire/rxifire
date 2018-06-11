@@ -4,6 +4,12 @@ import { Observable } from 'rxjs/Observable'
 import { BehaviorSubject } from 'rxjs/BehaviorSubject'
 import { Subject } from 'rxjs/Subject'
 
+import { tap } from 'rxjs/operators/tap'
+import { takeUntil } from 'rxjs/operators/takeUntil'
+import { finalize } from 'rxjs/operators/finalize'
+import { filter } from 'rxjs/operators/filter'
+import { defer } from 'rxjs/observable/defer'
+
 import * as eff from './effects'
 
 export {
@@ -60,9 +66,11 @@ export interface Config<UIEvents> extends Partial<ConfigOptional<UIEvents>>, Con
 
 // todo: temporarily here - convert to immutable, event based solution
 export class EffInfo implements eff.Info<any, any> {
-  status: eff.Status = 'active'
+  _status = new BehaviorSubject<eff.Status>('active')
   error?: any
-  value?: any
+  result?: any
+
+  get status () { return this._status.value }
 
   constructor (private _afterUpdate: () => void) { }
 
@@ -70,16 +78,17 @@ export class EffInfo implements eff.Info<any, any> {
 
   resetTo = (s: 'active' | 'inactive') => this._updateStatus(s)
 
-  private _updateStatus = (s: eff.Status, v?: any) => {
-    this.status = s
-
+  _updateStatus = (s: eff.Status, v?: any) => {
     if (s === 'error') {
       this.error = v
     } else {
       this.error = undefined
-      this.value = v
+      this.result = v
     }
 
+    console.log(s, v, this.status)
+    this._status.next(s)
+    console.log(s, v, this.status)
     this._afterUpdate()
   }
 }
@@ -90,7 +99,7 @@ export class RxComponent<Props, UIEvents, UIState, Contract extends eff.EffectsC
   uiEventsSub: AsSubjects<UIEvents> = {} as any
   uiEventsCb: AsCallbacks<UIEvents> = {} as any
 
-  fires: AsSubjects<eff.EffectsIn<Contract>> = {} as any
+  // fires: AsSubjects<eff.EffectsIn<Contract>> = {} as any
   effects: eff.Effects<Contract> = {} as any
   effInfos: eff.Infos<Contract> = {} as any
 
@@ -109,10 +118,32 @@ export class RxComponent<Props, UIEvents, UIState, Contract extends eff.EffectsC
 
     Object.keys(p.effects).forEach(e => {
       const eff = p.effects[e]
-      this.effInfos[e] = new EffInfo(() => this.forceUpdate)
+      const info = this.effInfos[e] = new EffInfo(() => this.forceUpdate)
 
       this.effects[e] = p => {
-        return eff(p)
+        if (info.is('active')) {
+          info._updateStatus('in-progress')
+          return defer(() => eff(p)) // Observable or promise
+            .pipe(
+              tap(
+                v => info._updateStatus('success', v),
+                e => info._updateStatus('error', e)
+              ),
+              takeUntil(
+                info._status.pipe(
+                    tap(x => console.log('STATUS-BEFORE', x)),
+                    filter(s => s !== 'in-progress'),
+                    tap(x => console.log('STATUS-AFTER', x)),
+                    tap(() => info.is('in-progress') && info.resetTo('active'))
+                  )
+              ),
+              finalize(() => {
+                console.log('FINALIZE', info.status)
+                info.is('in-progress') && info.resetTo('active')
+              })
+            )
+        }
+        throw new Error('ALREADY_RUNNING')
       }
     })
 
