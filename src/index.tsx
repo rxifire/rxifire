@@ -76,7 +76,7 @@ export class EffInfo implements eff.Info<any, any> {
 
   is = (s: eff.Status) => s === this.status
 
-  resetTo = (s: 'active' | 'inactive') => this._updateStatus(s)
+  reset = () => this._updateStatus('active')
 
   _updateStatus = (s: eff.Status, v?: any) => {
     if (s === 'error') {
@@ -134,12 +134,12 @@ export class RxComponent<Props, UIEvents, UIState, Contract extends eff.EffectsC
                     tap(x => console.log('STATUS-BEFORE', x)),
                     filter(s => s !== 'in-progress'),
                     tap(x => console.log('STATUS-AFTER', x)),
-                    tap(() => info.is('in-progress') && info.resetTo('active'))
+                    tap(() => info.is('in-progress') && info.reset())
                   )
               ),
               finalize(() => {
                 console.log('FINALIZE', info.status)
-                info.is('in-progress') && info.resetTo('active')
+                info.is('in-progress') && info.reset()
               })
             )
         }

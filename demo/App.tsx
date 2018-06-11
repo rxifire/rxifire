@@ -36,7 +36,9 @@ export const logic: Logic<Props, UIEvents, Props, EffectsContract> = ({ props, u
             .ignoreElements()
         )
     )
-    .takeUntil(uiEvents.click)
+    .takeUntil(uiEvents.click
+      .do(() => effInfos.login.reset())
+    )
     .repeat()
 
 export const view: View<UIEvents, Props, EffectsContract> = (cb) => (ps, eff) => {

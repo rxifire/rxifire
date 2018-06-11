@@ -23,7 +23,7 @@ export type Infos<T extends EffectsContract> = {
   [k in keyof T]: Info<T[k][1], T[k][2]>
 }
 
-export type Status = 'active' | 'inactive' | 'in-progress' | 'success' | 'error'
+export type Status = 'active' | 'in-progress' | 'success' | 'error'
 
 export interface Info<R, E> {
   status: Status
@@ -32,7 +32,7 @@ export interface Info<R, E> {
 
   is: (s: Status) => boolean
 
-  resetTo (s: 'active' | 'inactive'): void
+  reset (): void
 }
 
 // TODO - review and most likely delete - keep it simple
