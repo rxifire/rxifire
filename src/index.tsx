@@ -10,63 +10,15 @@ import { finalize } from 'rxjs/operators/finalize'
 import { filter } from 'rxjs/operators/filter'
 import { defer } from 'rxjs/observable/defer'
 
-import * as eff from './effects'
-
+import * as T from './types'
 export {
-  eff as effects
+  T,
+  T as types
 }
-
-export type AsObservables<T extends {}> = {
-  [k in keyof T]: Observable<T[k]>
-}
-
-export type AsSubjects<T extends {}> = {
-  [k in keyof T]: Subject<T[k]>
-}
-
-export type AsBehaviors<T extends {}> = {
-  [k in keyof T]: BehaviorSubject<T[k]>
-}
-
-export type AsCallbacks<T extends {}> = {
-  [k in keyof T]: (k: T[k]) => void
-}
-
-export interface LogicParams<Props, UIEvents, T extends eff.EffectsContract> {
-  props: Observable<Props>
-  uiEvents: AsObservables<UIEvents>
-  effects: eff.Effects<T>
-  effInfos: eff.Infos<T>
-}
-
-export type Logic<Props, UIEvents = {}, UIState = Props, Contract extends eff.EffectsContract = {}> =
-  (ps: LogicParams<Props, UIEvents, Contract>) =>
-    Observable<UIState>
-
-export type View<UIEvents = {}, UIState = {}, Contract extends eff.EffectsContract = {}> =
-  (cb: AsCallbacks<UIEvents>) => (s: UIState, eff: eff.Infos<Contract>) => JSX.Element
-
-export interface RxComponentProps<Props, UIEvents = {}, UIState = Props, Contract extends eff.EffectsContract = {}> {
-  props: Props
-  config: ConfigInternal<UIEvents>
-  view: View<UIEvents, UIState, Contract>
-  effects: eff.Effects<Contract>
-  logic (ps: LogicParams<any, any, any>): Observable<any>
-}
-
-export interface ConfigOptional<UIEvents> {
-  uiEventsNames: (keyof UIEvents)[] // ideally they were just infered from types - but not support at the moment
-}
-
-export interface ConfigRequired { }
-
-export interface ConfigInternal<UIEvents> extends ConfigOptional<UIEvents>, ConfigRequired { }
-
-export interface Config<UIEvents> extends Partial<ConfigOptional<UIEvents>>, ConfigRequired { }
 
 // todo: temporarily here - convert to immutable, event based solution
-export class EffInfo implements eff.Info<any, any> {
-  _status = new BehaviorSubject<eff.Status>('active')
+export class EffInfo implements T.EffInfo<any, any> {
+  _status = new BehaviorSubject<T.EffStatus>('active')
   error?: any
   result?: any
 
@@ -74,11 +26,11 @@ export class EffInfo implements eff.Info<any, any> {
 
   constructor (private _afterUpdate: () => void) { }
 
-  is = (s: eff.Status) => s === this.status
+  is = (s: T.EffStatus) => s === this.status
 
   reset = () => this._updateStatus('active')
 
-  _updateStatus = (s: eff.Status, v?: any) => {
+  _updateStatus = (s: T.EffStatus, v?: any) => {
     if (s === 'error') {
       this.error = v
     } else {
@@ -93,21 +45,21 @@ export class EffInfo implements eff.Info<any, any> {
   }
 }
 
-export class RxComponent<Props, UIEvents, UIState, Contract extends eff.EffectsContract> extends
-  React.Component<RxComponentProps<Props, UIEvents, UIState, Contract>> {
+export class RxComponent<Props, UIEvents, UIState, Contract extends T.EffectsContract> extends
+  React.Component<T.RxComponentProps<Props, UIEvents, UIState, Contract>> {
   propsSub: BehaviorSubject<Props>
-  uiEventsSub: AsSubjects<UIEvents> = {} as any
-  uiEventsCb: AsCallbacks<UIEvents> = {} as any
+  uiEventsSub: T.AsSubjects<UIEvents> = {} as any
+  uiEventsCb: T.AsCallbacks<UIEvents> = {} as any
 
-  // fires: AsSubjects<eff.EffectsIn<Contract>> = {} as any
-  effects: eff.Effects<Contract> = {} as any
-  effInfos: eff.Infos<Contract> = {} as any
+  // fires: AsSubjects<EffectsIn<Contract>> = {} as any
+  effects: T.Effects<Contract> = {} as any
+  effInfos: T.EffInfos<Contract> = {} as any
 
-  View: (s: UIState, eff: eff.Infos<Contract>) => JSX.Element
+  View: (s: UIState, eff: T.EffInfos<Contract>) => JSX.Element
   _state: UIState = {} as any
   sub!: { unsubscribe: () => void, add: any }
 
-  constructor (p: RxComponentProps<Props, UIEvents, UIState, Contract>) {
+  constructor (p: T.RxComponentProps<Props, UIEvents, UIState, Contract>) {
     super(p)
     this.propsSub = new BehaviorSubject<Props>(this.props.props)
 
@@ -151,7 +103,7 @@ export class RxComponent<Props, UIEvents, UIState, Contract extends eff.EffectsC
 
   }
 
-  componentWillReceiveProps (p: RxComponentProps<Props, UIEvents, UIState, Contract>) {
+  componentWillReceiveProps (p: T.RxComponentProps<Props, UIEvents, UIState, Contract>) {
     this.propsSub.next(p.props)
   }
 
@@ -177,8 +129,8 @@ export class RxComponent<Props, UIEvents, UIState, Contract extends eff.EffectsC
   }
 }
 
-function configWithDefaults<UIEvents> (cfg?: Config<UIEvents>): ConfigInternal<UIEvents> {
-  const op: ConfigOptional<UIEvents> = {
+function configWithDefaults<UIEvents> (cfg?: T.Config<UIEvents>): T.ConfigInternal<UIEvents> {
+  const op: T.ConfigOptional<UIEvents> = {
     uiEventsNames: []
   }
   return Object.assign(op, cfg)
@@ -188,12 +140,12 @@ export const createRxComponent = <
   Props,
   UIEvents = {},
   UIState = Props,
-  Contract extends eff.EffectsContract = {}>
+  Contract extends T.EffectsContract = {}>
   (
-  logic: Logic<Props, UIEvents, UIState, Contract>,
-  view: View<UIEvents, UIState, Contract>,
-  effects: eff.Effects<Contract>,
-  config?: Config<UIEvents>
+  logic: T.Logic<Props, UIEvents, UIState, Contract>,
+  view: T.View<UIEvents, UIState, Contract>,
+  effects: T.Effects<Contract>,
+  config?: T.Config<UIEvents>
   ) =>
   (p: Props) =>
     <RxComponent

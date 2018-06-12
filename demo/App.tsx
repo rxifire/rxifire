@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as Rx from 'rxjs'
 
-import { createRxComponent, Logic, View, effects as eff } from '../src'
+import { createRxComponent, T } from '../src'
 
 const $ = Rx.Observable
 
@@ -14,17 +14,17 @@ export interface UIEvents {
   click: any
 }
 
-export interface EffectsContract extends eff.EffectsContract {
+export interface EffectsContract extends T.EffectsContract {
   login: [number, string, null]
   logout: [void, boolean, null]
 }
 
-export const effects: eff.Effects<EffectsContract> = {
+export const effects: T.Effects<EffectsContract> = {
   login: (p) => $.of('SEC-TOK').delay(p * 1000).toPromise(),
   logout: () => $.of(true).delay(1000)
 }
 
-export const logic: Logic<Props, UIEvents, Props, EffectsContract> = ({ props, uiEvents, effects, effInfos }) =>
+export const logic: T.Logic<Props, UIEvents, Props, EffectsContract> = ({ props, uiEvents, effects, effInfos }) =>
   props
     .mergeMap((p) =>
       $.timer(0, 1000).map((c) => ({ ...p, count: c }))
@@ -41,8 +41,8 @@ export const logic: Logic<Props, UIEvents, Props, EffectsContract> = ({ props, u
     )
     .repeat()
 
-export const view: View<UIEvents, Props, EffectsContract> = (cb) => (ps, eff) => {
-  console.log(eff.login.is('in-progress'), 'IN_PR', eff.login)
+export const view: T.View<UIEvents, Props, EffectsContract> = (cb) => (ps, eff) => {
+  // console.log(eff.login.is('in-progress'), 'IN_PR', eff.login)
   return <div>
     <h1>Cool, {ps.name} {ps.count}</h1>
     {eff.login.is('in-progress') && <p>...Loading...</p>}
