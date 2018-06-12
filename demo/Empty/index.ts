@@ -11,7 +11,7 @@ const effects: T.Effects = {
 }
 
 const comp = createRxComponent<T.Props, T.UIEvents, T.UIState, T.EffectsContract>(logic, view, effects, {
-  uiEventsNames: ['empty', 'special']
+  uiEventsNames: ['empty', 'special', 'kill', 'resurect']
 })
 
 export default comp

@@ -50,7 +50,6 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
   uiEventsSub: T.AsSubjects<UIEvents> = {} as any
   uiEventsCb: T.AsCallbacks<UIEvents> = {} as any
 
-  // fires: AsSubjects<EffectsIn<Contract>> = {} as any
   effects: T.EffectsObs<Contract> = {} as any
   effInfos: T.EffInfos<Contract> = {} as any
 
@@ -80,7 +79,7 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
     this.sub = this.props.logic({
       props: this.propsSub,
       uiEvents: this.uiEventsSub,
-      eff: this.effects, // accepting Observable | Promise - but it will be upgraded to Observable
+      eff: this.effects,
       effInfos: this.effInfos
     })
       .subscribe(s => {
@@ -105,6 +104,7 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
       this.effects[e] = p => {
         if (info.is('active')) {
           info._updateStatus('in-progress')
+          this.forceUpdate()
           return defer(() => eff(p)) // Observable or promise
             .pipe(
               tap(
@@ -113,14 +113,12 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
               ),
               takeUntil(
                 info._status.pipe(
-                  tap(x => console.log('STATUS-BEFORE', x)),
-                  filter(s => !(s === 'success' || s === 'in-progress')),
-                  tap(x => console.log('STATUS-AFTER', x)),
-                  tap(() => info.is('in-progress') && info.reset())
+                  filter(s => !(s === 'success' || s === 'in-progress'))
+                  // tap(() => info.is('in-progress') && info.reset())
                 )
               ),
               finalize(() => {
-                console.log('FINALIZE', info.status)
+                console.log('FINALIZE', info.status) // cancelled
                 info.is('in-progress') && info.reset()
               })
             )

@@ -1,12 +1,13 @@
 import { Observable } from 'rxjs/Observable'
 
 // todo: add progress update
+// Promise will be upgraded to Observable
 export type Effect<P, R> = (params: P) => (Observable<R> | Promise<R>)
 
 export type EffectBase = Effect<any, any>
 
 // ideally we could infer params from the function itself
-// seems to be impossible currently, but maybe ?
+// seems to be impossible currently, but maybe?
 export type EffectsContract = {
   [k: string]: [any, any, any] // ParamsIn, Out, Error
 }

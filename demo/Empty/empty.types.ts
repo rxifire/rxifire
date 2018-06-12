@@ -7,12 +7,14 @@ export interface Props {}
 export interface UIEvents {
   empty: null
   special: null
+  kill: null
+  resurect: null
 }
 
-export interface UIState {
+export type UIState = {
   run: number
   items: string[]
-}
+} | { killed: boolean }
 
 export type EffectsContract = {
   mockSpecial: [number, string, null]
