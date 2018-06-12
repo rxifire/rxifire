@@ -39,10 +39,7 @@ export class EffInfo implements T.EffInfo<any, any> {
       this.error = undefined
       this.result = v
     }
-
-    console.log(s, v, this.status)
     this._status.next(s)
-    console.log(s, v, this.status)
     this._afterUpdate()
   }
 }
@@ -54,7 +51,7 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
   uiEventsCb: T.AsCallbacks<UIEvents> = {} as any
 
   // fires: AsSubjects<EffectsIn<Contract>> = {} as any
-  effects: T.Effects<Contract> = {} as any
+  effects: T.EffectsObs<Contract> = {} as any
   effInfos: T.EffInfos<Contract> = {} as any
 
   View: (s: UIState, eff: T.EffInfos<Contract>) => JSX.Element
@@ -70,6 +67,37 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
       this.uiEventsCb[n] = this.uiEventsSub[n].next.bind(this.uiEventsSub[n])
     })
 
+    this.View = p.view(this.uiEventsCb)
+
+    this._initEffects(p)
+  }
+
+  componentWillReceiveProps (p: T.RxComponentProps<Props, UIEvents, UIState, Contract>) {
+    this.propsSub.next(p.props)
+  }
+
+  componentDidMount () {
+    this.sub = this.props.logic({
+      props: this.propsSub,
+      uiEvents: this.uiEventsSub,
+      eff: this.effects, // accepting Observable | Promise - but it will be upgraded to Observable
+      effInfos: this.effInfos
+    })
+      .subscribe(s => {
+        this._state = s
+        this.forceUpdate()
+      })
+  }
+
+  componentWillUnmount () {
+    this.sub && this.sub.unsubscribe()
+  }
+
+  render () {
+    return this._state && this.View(this._state, this.effInfos)
+  }
+
+  private _initEffects (p: T.RxComponentProps<Props, UIEvents, UIState, Contract>) {
     Object.keys(p.effects).forEach(e => {
       const eff = p.effects[e]
       const info = this.effInfos[e] = new EffInfo(() => this.forceUpdate)
@@ -86,7 +114,7 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
               takeUntil(
                 info._status.pipe(
                   tap(x => console.log('STATUS-BEFORE', x)),
-                  filter(s => s !== 'in-progress'),
+                  filter(s => !(s === 'success' || s === 'in-progress')),
                   tap(x => console.log('STATUS-AFTER', x)),
                   tap(() => info.is('in-progress') && info.reset())
                 )
@@ -100,35 +128,8 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
         throw new Error('ALREADY_RUNNING')
       }
     })
-
-    this.View = p.view(this.uiEventsCb)
-
   }
 
-  componentWillReceiveProps (p: T.RxComponentProps<Props, UIEvents, UIState, Contract>) {
-    this.propsSub.next(p.props)
-  }
-
-  componentDidMount () {
-    this.sub = this.props.logic({
-      props: this.propsSub,
-      uiEvents: this.uiEventsSub,
-      effects: this.effects,
-      effInfos: this.effInfos
-    })
-      .subscribe(s => {
-        this._state = s
-        this.forceUpdate()
-      })
-  }
-
-  componentWillUnmount () {
-    this.sub && this.sub.unsubscribe()
-  }
-
-  render () {
-    return this._state && this.View(this._state, this.effInfos)
-  }
 }
 
 function configWithDefaults<UIEvents> (cfg?: T.Config<UIEvents>): T.ConfigInternal<UIEvents> {

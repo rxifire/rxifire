@@ -6,7 +6,8 @@ import { AsObservables, AsCallbacks } from './helpers'
 export interface LogicParams<Props extends {}, UIEvents extends {}, T extends eff.EffectsContract> {
   props: Observable<Props>
   uiEvents: AsObservables<UIEvents>
-  effects: eff.Effects<T>
+  // todo: figure out how to combine these
+  eff: eff.EffectsObs<T>
   effInfos: eff.EffInfos<T>
 }
 

@@ -1,22 +1,24 @@
 import * as T from '../../src'
 
-export type Option = 'empty' | 'counter' | 'calculator'
-export type OptionToComponent = {
-  [k in Option]: JSX.Element
-}
+export type Options = 'counter' | 'calculator'
 
 export interface Props {}
 
 export interface UIEvents {
-  select: Option
+  empty: null
+  special: null
 }
 
 export interface UIState {
-  selectedIndex: number
-  options: Option[]
+  run: number
+  items: string[]
 }
 
-export type EffectsContract = {}
+export type EffectsContract = {
+  mockSpecial: [number, string, null]
+}
+
+export type Effects = T.Effects<EffectsContract>
 
 export type Logic = T.Logic<Props, UIEvents, UIState, EffectsContract>
 

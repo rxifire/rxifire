@@ -15,6 +15,10 @@ export type Effects<T extends EffectsContract> = {
   [k in keyof T]: Effect<T[k][0], T[k][1]>
 }
 
+export type EffectsObs<T extends EffectsContract> = {
+  [k in keyof T]: (p: T[k][0]) => Observable<T[k][1]>
+}
+
 export type EffectsIn<T extends EffectsContract> = {
   [k in keyof T]: T[k][0]
 }
