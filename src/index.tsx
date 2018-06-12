@@ -45,7 +45,7 @@ export class EffInfo implements T.EffInfo<any, any> {
   }
 }
 
-export class RxComponent<Props, UIEvents, UIState, Contract extends T.EffectsContract> extends
+export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends {}, Contract extends T.EffectsContract> extends
   React.Component<T.RxComponentProps<Props, UIEvents, UIState, Contract>> {
   propsSub: BehaviorSubject<Props>
   uiEventsSub: T.AsSubjects<UIEvents> = {} as any
