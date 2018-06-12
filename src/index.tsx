@@ -11,6 +11,8 @@ import { filter } from 'rxjs/operators/filter'
 import { defer } from 'rxjs/observable/defer'
 
 import * as T from './types'
+
+export * from './types'
 export {
   T,
   T as types
