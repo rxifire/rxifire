@@ -58,7 +58,7 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
   effInfos: T.EffInfos<Contract> = {} as any
 
   View: (s: UIState, eff: T.EffInfos<Contract>) => JSX.Element
-  _state: UIState = {} as any
+  _state: UIState | null = null
   sub!: { unsubscribe: () => void, add: any }
 
   constructor (p: T.RxComponentProps<Props, UIEvents, UIState, Contract>) {
@@ -85,11 +85,11 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
               ),
               takeUntil(
                 info._status.pipe(
-                    tap(x => console.log('STATUS-BEFORE', x)),
-                    filter(s => s !== 'in-progress'),
-                    tap(x => console.log('STATUS-AFTER', x)),
-                    tap(() => info.is('in-progress') && info.reset())
-                  )
+                  tap(x => console.log('STATUS-BEFORE', x)),
+                  filter(s => s !== 'in-progress'),
+                  tap(x => console.log('STATUS-AFTER', x)),
+                  tap(() => info.is('in-progress') && info.reset())
+                )
               ),
               finalize(() => {
                 console.log('FINALIZE', info.status)
@@ -110,12 +110,12 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
   }
 
   componentDidMount () {
-    this.sub = ((this.props.logic && this.props.logic({
+    this.sub = this.props.logic({
       props: this.propsSub,
       uiEvents: this.uiEventsSub,
       effects: this.effects,
       effInfos: this.effInfos
-    })) || this.propsSub)
+    })
       .subscribe(s => {
         this._state = s
         this.forceUpdate()
@@ -127,7 +127,7 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
   }
 
   render () {
-    return this.View(this._state, this.effInfos)
+    return this._state && this.View(this._state, this.effInfos)
   }
 }
 
