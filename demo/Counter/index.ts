@@ -1,4 +1,5 @@
-import { Observable as $ } from 'rxjs'
+// counter is propably an overkill
+
 import { createRxComponent } from '../../src'
 
 import * as T from './counter.types'
