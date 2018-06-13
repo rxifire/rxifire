@@ -1,6 +1,6 @@
 import * as T from '../../src'
 
-export interface OptionalProps {
+export interface DefaultProps {
   optional1: number
   optional2: string
 }
@@ -12,9 +12,9 @@ export interface PropsBase {
   notRequired?: boolean
 }
 
-export type Props = PropsBase & Partial<OptionalProps>
+export type Props = PropsBase & Partial<DefaultProps>
 
-export type PropsWithDefaults = PropsBase & OptionalProps
+export type PropsWithDefaults = PropsBase & DefaultProps
 
 export interface UIEvents {}
 

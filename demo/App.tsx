@@ -24,7 +24,7 @@ export const effects: T.Effects<EffectsContract> = {
   logout: () => $.of(true).delay(1000)
 }
 
-export const logic: T.Logic<Props, UIEvents, Props, EffectsContract> = ({ props, uiEvents, effects, effInfos }) =>
+export const logic: T.Logic<Props, UIEvents, Props, EffectsContract> = ({ props, uiEvents, effInfos }) =>
   props
     .mergeMap((p) =>
       $.timer(0, 1000).map((c) => ({ ...p, count: c }))

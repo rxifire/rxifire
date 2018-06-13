@@ -11,7 +11,6 @@ export const view: View = (c) => (s, e) => {
       </div>
     </div>
   }
-
   return <div>
 
     <p>A very simple component presenting most functionalities</p>
