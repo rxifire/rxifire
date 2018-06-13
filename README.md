@@ -23,7 +23,7 @@ Here are some broad and ambitious goals for this project:
 
 Easily create components (right now only React's) with the following characteristics:
 
-  1. 100% separate logic, views and async effects
+  1. logic, views and async effects 100% seperated
   2. auto-magically glue and inject events from view to logic
   3. upgrade async effects and auto-magically glue and inject info about async effects into views (and logic?)
   4. keep views 100% pure

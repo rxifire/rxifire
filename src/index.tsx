@@ -8,6 +8,8 @@ import { tap } from 'rxjs/operators/tap'
 import { takeUntil } from 'rxjs/operators/takeUntil'
 import { finalize } from 'rxjs/operators/finalize'
 import { filter } from 'rxjs/operators/filter'
+import { switchMap } from 'rxjs/operators/switchMap'
+import { retryWhen } from 'rxjs/operators/retryWhen'
 import { defer } from 'rxjs/observable/defer'
 
 import * as T from './types'
@@ -67,7 +69,7 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
   effects!: T.EffectsLogic<Contract>
 
   View: (s: UIState, extra: T.ViewExtra<Contract>) => JSX.Element
-  viewExtra: T.ViewExtra<Contract>
+  viewExtra!: T.ViewExtra<Contract>
 
   _state: UIState | null = null
   sub!: { unsubscribe: () => void, add: any }
@@ -85,10 +87,6 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
     this.View = p.view(this.uiEventsCb)
 
     this._initEffects(p)
-    this.viewExtra = {
-      eff: this.effects.i,
-      meta: this.meta
-    }
   }
 
   componentWillReceiveProps (p: T.RxComponentProps<Props, UIEvents, UIState, Contract>) {
@@ -96,16 +94,39 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
   }
 
   componentDidMount () {
-    this.sub = this.props.logic({
-      props: this.propsSub,
-      uiEvents: this.uiEventsSub,
-      eff: this.effects,
-      meta: this.meta
-    })
-      .subscribe(s => {
-        this._state = s
-        this.forceUpdate()
-      })
+    this.sub = this.meta._status
+      .pipe(
+        filter(s => s === 'loading'),
+        tap(() => this._initEffects(this.props)),
+        switchMap(() =>
+          this.props.logic({
+            props: this.propsSub,
+            uiEvents: this.uiEventsSub,
+            eff: this.effects,
+            meta: this.meta // most likely not needed here
+          })
+            .pipe(
+              tap(
+                (s) => {
+                  this.meta.is('loading') && this.meta._status.next('active')
+                  this._state = s
+                  this.forceUpdate()
+                },
+                (err) => {
+                  this.meta.error = err
+                  this.meta._status.next('error')
+                  this.forceUpdate()
+                },
+                () => {
+                  this.meta._status.next('completed')
+                  this.forceUpdate()
+                }
+              ),
+              retryWhen(() => this.meta._status)
+            )
+        )
+      )
+      .subscribe()
   }
 
   componentWillUnmount () {
@@ -113,6 +134,7 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
   }
 
   render () {
+    console.log('EXTRA', this.viewExtra)
     return this._state && this.View(this._state, this.viewExtra)
   }
 
@@ -122,8 +144,11 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
     (this.effects as T.EffectsLogic<{}>) = {
       f, fire: f, i, info: i
     }
+    this.viewExtra = {
+      eff: this.effects.i,
+      meta: this.meta
+    }
     Object.keys(p.effects).forEach(e => {
-      console.log('hey', p.effects)
       const eff = p.effects[e]
       const info = this.effects.i[e] = new EffInfo(() => this.forceUpdate)
 

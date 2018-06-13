@@ -30,13 +30,17 @@ const InProgress = (s: UIStateIn) =>
 
 export const view: View = (c) => (s, e) =>
   <div>
+    {
+      e.meta.is('completed') &&
+      <button onClick={() => e.meta.reset()}>reset</button>
+    }
     <div style={{ width: 4 * (2 * GUTTER + SIDE), minHeight: SIDE, padding: GUTTER, border: '1px solid black' }}>
       {
         (s as UIStateIn).left ?
           InProgress(s as UIStateIn) : <h3>{(s as UIStateR).result}</h3>
       }
     </div>
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', filter: `blur(${e.meta.is('completed') ? 4 : 0}px)` }}>
       {
         LAYOUT.map((r, rX) => <div key={rX}>
           {r.map(([call, what], cX) =>
