@@ -97,7 +97,11 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
     this.sub = this.meta._status
       .pipe(
         filter(s => s === 'loading'),
-        tap(() => this._initEffects(this.props)),
+        tap(() => {
+          this._initEffects(this.props)
+          this._state = null
+          this.forceUpdate()
+        }),
         switchMap(() =>
           this.props.logic({
             props: this.propsSub,
@@ -127,6 +131,8 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
         )
       )
       .subscribe()
+
+    this.forceUpdate()
   }
 
   componentWillUnmount () {
@@ -134,8 +140,8 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
   }
 
   render () {
-    console.log('EXTRA', this.viewExtra)
-    return this._state && this.View(this._state, this.viewExtra)
+    // todo: improve 'loading', either wait for state or require a loading template
+    return (this._state || this.props.config.unsafeLoading) && this.View(this._state!, this.viewExtra)
   }
 
   private _initEffects (p: T.RxComponentProps<Props, UIEvents, UIState, Contract>) {
@@ -183,7 +189,8 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
 
 function configWithDefaults<UIEvents> (cfg?: T.Config<UIEvents>): T.ConfigInternal<UIEvents> {
   const op: T.ConfigOptional<UIEvents> = {
-    uiEventsNames: []
+    uiEventsNames: [],
+    unsafeLoading: false
   }
   return Object.assign(op, cfg)
 }

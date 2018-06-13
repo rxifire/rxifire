@@ -1,6 +1,6 @@
 import * as T from '../../src'
 
-export type Option = 'empty' | 'default props' | 'counter' | 'calculator'
+export type Option = 'empty' | 'default props' | 'counter' | 'calculator' | 'meta'
 export type OptionToComponent = {
   [k in Option]: JSX.Element
 }

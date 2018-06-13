@@ -7,6 +7,7 @@ export type LogicStatus = 'loading' | 'active' | 'completed' | 'error'
 
 export interface Meta {
   status: LogicStatus
+  error?: any
   is: (s: LogicStatus) => boolean
   reset: () => void // back to loading, very powerful, should be hidden in the config
 }
@@ -40,6 +41,7 @@ export interface RxComponentProps<Props extends {}, UIEvents extends {}, UIState
 
 export interface ConfigOptional<UIEvents> {
   uiEventsNames: (keyof UIEvents)[] // ideally they were just infered from types - but not support at the moment
+  unsafeLoading: boolean // todo: remove from here once fixed
 }
 
 export interface ConfigRequired { }
