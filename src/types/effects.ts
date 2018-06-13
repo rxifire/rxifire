@@ -24,7 +24,14 @@ export type EffectsIn<T extends EffectsContract> = {
   [k in keyof T]: T[k][0]
 }
 
-export type EffInfos<T extends EffectsContract> = {
+export type EffectsLogic<T extends EffectsContract> = {
+  f: EffectsObs<T>, fire: EffectsObs<T>,
+  i: EffectsInfos<T>, info: EffectsInfos<T>
+}
+
+export type EffectsView<T extends EffectsContract> = EffectsInfos<T>
+
+export type EffectsInfos<T extends EffectsContract> = {
   [k in keyof T]: EffInfo<T[k][1], T[k][2]>
 }
 

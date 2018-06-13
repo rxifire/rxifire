@@ -20,6 +20,7 @@ const formNumber = (digit: Rx.Observable<Digit>, dot: Rx.Observable<any>, until:
     .scan((acc, n) => n === '0' && (acc[0] === n) ? acc : acc.concat(n), [])
     .map(c => c.join(''))
     .takeUntil(until)
+    .defaultIfEmpty('0')
 
 export const logic: Logic = ({ uiEvents }) =>
   Rx.Observable.concat(
@@ -30,13 +31,12 @@ export const logic: Logic = ({ uiEvents }) =>
   )
     .merge(uiEvents.operation.take(1).map(o => ({ operation: o })))
     .scan((acc, n) => Object.assign({}, acc, n), {} as UIStateIn)
-    .switchMap(r =>
-      uiEvents.equal.take(1)
+    .switchMap(r => uiEvents.equal
         .filter(() => 'right' in r)
+        .take(1)
         .map(() => opHandlers[r.operation!](parseFloat(r.left!), parseFloat(r.right!)))
         .map(r => ({ result: r.toString() }))
-        .startWith(r as UIState)
-    )
+        .startWith(r as UIState))
     .do(x => console.log('STATE', x))
     .startWith({})
     .finally(() => console.log('DONE'))

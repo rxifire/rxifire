@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import { View } from './empty.types'
 
-export const view: View = (c) => (s, e) => {
+export const view: View = (c) => (s, { eff }) => {
   if ('killed' in s) {
     return <div>
       Only if you are ready for it.
@@ -17,7 +17,7 @@ export const view: View = (c) => (s, e) => {
 
     <button onClick={() => c.empty(null)}>Empty</button>
     {
-      e.mockSpecial.is('active') ?
+      eff.mockSpecial.is('active') ?
         <button onClick={() => c.special(null)}>Fire Special</button> :
         '...'
     }

@@ -24,7 +24,7 @@ export const effects: T.Effects<EffectsContract> = {
   logout: () => $.of(true).delay(1000)
 }
 
-export const logic: T.Logic<Props, UIEvents, Props, EffectsContract> = ({ props, uiEvents, effInfos }) =>
+export const logic: T.Logic<Props, UIEvents, Props, EffectsContract> = ({ props, uiEvents, eff }) =>
   props
     .mergeMap((p) =>
       $.timer(0, 1000).map((c) => ({ ...p, count: c }))
@@ -37,11 +37,11 @@ export const logic: T.Logic<Props, UIEvents, Props, EffectsContract> = ({ props,
         )
     )
     .takeUntil(uiEvents.click
-      .do(() => effInfos.login.reset())
+      .do(() => eff.i.login.reset())
     )
     .repeat()
 
-export const view: T.View<UIEvents, Props, EffectsContract> = (cb) => (ps, eff) => {
+export const view: T.View<UIEvents, Props, EffectsContract> = (cb) => (ps, { eff }) => {
   // console.log(eff.login.is('in-progress'), 'IN_PR', eff.login)
   return <div>
     <h1>Cool, {ps.name} {ps.count}</h1>

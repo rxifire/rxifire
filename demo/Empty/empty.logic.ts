@@ -4,7 +4,7 @@ import { Logic } from './empty.types'
 
 const $ = Rx.Observable
 
-export const logic: Logic = ({ uiEvents, eff, effInfos }) =>
+export const logic: Logic = ({ uiEvents, eff }) =>
   uiEvents.empty.startWith(null)
     .switchMap((_, r) =>
       $.merge(
@@ -12,10 +12,10 @@ export const logic: Logic = ({ uiEvents, eff, effInfos }) =>
           .map(i => `item-${i}`),
         uiEvents.special
           .mergeMap((_, i) =>
-            eff.mockSpecial(1)
+            eff.f.mockSpecial(1)
               .map(s => `${s}-${i}`)
           )
-          .do(() => effInfos.mockSpecial.reset())
+          .do(() => eff.i.mockSpecial.reset())
       )
         .scan((acc, i) => acc.concat(i), [])
         .map((items) => ({

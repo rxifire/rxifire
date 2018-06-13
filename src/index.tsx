@@ -44,22 +44,38 @@ export class EffInfo implements T.EffInfo<any, any> {
   }
 }
 
+export class LogicMeta implements T.Meta {
+  _status = new BehaviorSubject<T.LogicStatus>('loading')
+  // resets = new Subject<never>()
+
+  error?: any
+
+  get status () { return this._status.value }
+
+  is = (s: T.LogicStatus) => s === this._status.value
+  reset = () => this._status.next('loading')
+
+}
+
 export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends {}, Contract extends T.EffectsContract> extends
   React.Component<T.RxComponentProps<Props, UIEvents, UIState, Contract>> {
   propsSub: BehaviorSubject<Props>
+  meta: LogicMeta
   uiEventsSub: T.AsSubjects<UIEvents> = {} as any
   uiEventsCb: T.AsCallbacks<UIEvents> = {} as any
 
-  effects: T.EffectsObs<Contract> = {} as any
-  effInfos: T.EffInfos<Contract> = {} as any
+  effects!: T.EffectsLogic<Contract>
 
-  View: (s: UIState, eff: T.EffInfos<Contract>) => JSX.Element
+  View: (s: UIState, extra: T.ViewExtra<Contract>) => JSX.Element
+  viewExtra: T.ViewExtra<Contract>
+
   _state: UIState | null = null
   sub!: { unsubscribe: () => void, add: any }
 
   constructor (p: T.RxComponentProps<Props, UIEvents, UIState, Contract>) {
     super(p)
     this.propsSub = new BehaviorSubject<Props>(this.props.props)
+    this.meta = new LogicMeta()
 
     p.config.uiEventsNames.forEach(n => {
       this.uiEventsSub[n] = new Subject<UIEvents[keyof UIEvents]>()
@@ -69,6 +85,10 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
     this.View = p.view(this.uiEventsCb)
 
     this._initEffects(p)
+    this.viewExtra = {
+      eff: this.effects.i,
+      meta: this.meta
+    }
   }
 
   componentWillReceiveProps (p: T.RxComponentProps<Props, UIEvents, UIState, Contract>) {
@@ -80,7 +100,7 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
       props: this.propsSub,
       uiEvents: this.uiEventsSub,
       eff: this.effects,
-      effInfos: this.effInfos
+      meta: this.meta
     })
       .subscribe(s => {
         this._state = s
@@ -93,15 +113,21 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
   }
 
   render () {
-    return this._state && this.View(this._state, this.effInfos)
+    return this._state && this.View(this._state, this.viewExtra)
   }
 
   private _initEffects (p: T.RxComponentProps<Props, UIEvents, UIState, Contract>) {
+    const f = {}
+    const i = {};
+    (this.effects as T.EffectsLogic<{}>) = {
+      f, fire: f, i, info: i
+    }
     Object.keys(p.effects).forEach(e => {
+      console.log('hey', p.effects)
       const eff = p.effects[e]
-      const info = this.effInfos[e] = new EffInfo(() => this.forceUpdate)
+      const info = this.effects.i[e] = new EffInfo(() => this.forceUpdate)
 
-      this.effects[e] = p => {
+      this.effects.f[e] = p => {
         if (info.is('active')) {
           info._updateStatus('in-progress')
           this.forceUpdate()
@@ -140,7 +166,7 @@ function configWithDefaults<UIEvents> (cfg?: T.Config<UIEvents>): T.ConfigIntern
 export const createRxComponent = <
   Props,
   UIEvents = {},
-  UIState = Props,
+  UIState = {},
   Contract extends T.EffectsContract = {}>
   (
   logic: T.Logic<Props, UIEvents, UIState, Contract>,
