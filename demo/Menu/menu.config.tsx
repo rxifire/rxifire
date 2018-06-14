@@ -5,7 +5,7 @@ import Empty from '../Empty'
 import Counter from '../Counter'
 import DefaultProps from '../DefaultProps'
 import Calc from '../Calculator'
-import Meta from '../Process'
+import Meta from '../Meta'
 
 export const options: T.Option[] = [
   'counter',

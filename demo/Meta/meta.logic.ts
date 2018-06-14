@@ -1,6 +1,6 @@
 import * as Rx from 'rxjs'
 
-import { Logic, Props, PropsWithDefaults } from './process.types'
+import { Logic, Props, PropsWithDefaults } from './meta.types'
 
 const $ = Rx.Observable
 

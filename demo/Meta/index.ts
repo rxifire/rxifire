@@ -2,10 +2,10 @@ import { Observable as $ } from 'rxjs/Observable'
 
 import { createRxComponent } from '../../src'
 
-import * as T from './process.types'
+import * as T from './meta.types'
 
-import { logic } from './process.logic'
-import { view } from './process.view'
+import { logic } from './meta.logic'
+import { view } from './meta.view'
 
 const effects: T.Effects = {
   fireComplete: (ms) => $.timer(ms).map(() => new Date()),
