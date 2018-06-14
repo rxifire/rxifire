@@ -61,7 +61,7 @@ Here I am going to describe my advanture with Rx and what I learnt about it and 
 
 ### Push-Pull duality
 
-### The Power of Observable
+### What is Observable
 
 #### Data structure?
 
@@ -77,12 +77,16 @@ Here I am going to describe my advanture with Rx and what I learnt about it and 
 
 #### Superman?
 
-### Some theory
+### Observable and OOP
 
-#### Observable and OOP
+And then they were given two classes and asked to compose them.
+
+### Theory
 
 #### Monad
 
 #### Co-Monad
 
 #### RxNet, SigFlow
+
+### Observable and Mindfulness
