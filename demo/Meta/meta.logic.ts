@@ -6,9 +6,9 @@ const $ = Rx.Observable
 
 const withDefaults = (p: Props): PropsWithDefaults => ({
   ...p,
-  selfTerminationMs: 5000,
+  selfTerminationMs: 50000,
   autoErrorProb: 0.5,
-  loadForMs: 2000,
+  loadForMs: 20000,
   fireDurationMs: 5000
 })
 
