@@ -3,9 +3,7 @@ import * as T from '../../src'
 export interface Props {}
 
 export interface UIEvents {
-  up: never
-  down: never
-  reset: never
+  next: -1 | 1
 }
 
 export type UIState = {

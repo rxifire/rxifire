@@ -8,7 +8,7 @@ import { logic } from './counter.logic'
 import { view } from './counter.view'
 
 const comp = createRxComponent<T.Props, T.UIEvents, T.UIState, {}>(logic, view, {}, {
-  uiEventsNames: ['up', 'down', 'reset']
+  uiEventsNames: ['next']
 })
 
 export default comp
