@@ -6,13 +6,15 @@ import Counter from '../Counter'
 import DefaultProps from '../DefaultProps'
 import Calc from '../Calculator'
 import Meta from '../Meta'
+import SayColor from '../SayColor'
 
 export const options: T.Option[] = [
   'counter',
   'default props',
   'empty',
   'calculator',
-  'meta'
+  'meta',
+  'say color'
 ]
 
 export const optionsToComponent: T.OptionToComponent = {
@@ -20,5 +22,6 @@ export const optionsToComponent: T.OptionToComponent = {
   calculator: <Calc />,
   counter: <Counter />,
   'default props': <DefaultProps required1={5} required2='6' />,
-  meta: <Meta />
+  meta: <Meta />,
+  'say color': <SayColor />
 }

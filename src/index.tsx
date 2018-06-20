@@ -55,7 +55,10 @@ export class LogicMeta implements T.Meta {
   get status () { return this._status.value }
 
   is = (s: T.LogicStatus) => s === this._status.value
-  reset = () => this._status.next('loading')
+  reset = () => {
+    this.error = undefined
+    this._status.next('loading')
+  }
 
 }
 

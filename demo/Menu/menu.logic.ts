@@ -8,8 +8,8 @@ const $ = Rx.Observable
 export const logic: Logic = ({ props, uiEvents }) =>
   uiEvents.select
     .map(s => options.indexOf(s))
-    .startWith(4)
-    .do(x => console.log('SELECT'))
+    .startWith(5)
+    .do(() => console.log('SELECT'))
     .map(s => ({
       selectedIndex: s,
       options
