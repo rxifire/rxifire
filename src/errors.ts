@@ -7,7 +7,7 @@ export type EnumMap = {
 }
 
 const StatusToMessage: EnumMap = {
-  4000: 'No subscriptions for emitted signal.'
+  4000: 'If a tree falls in the forest and no one is there, does it still make a sound.'
 }
 
 export class RxifireError extends Error {

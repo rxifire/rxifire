@@ -54,3 +54,23 @@ test('signal - map cb value to proper type and fire', () => {
   )
     .toPromise()
 })
+
+test('signal - throws when fire cb accessed before stream', () =>
+  expect(() => new SignalWrap<Signals>().fire('a')).toThrowError(RxifireError)
+)
+
+test('signal - cache', () => {
+  const s = new SignalWrap<Signals>()
+  const a = s.$('a')
+  const cb1 = s.fire('a')
+  const cb2 = s.fire('a')
+  expect(cb1).toBe(cb2)
+  const m = (x: string) => parseInt(x, 10)
+  const m2 = m
+  const m3 = (x: string) => parseInt(x, 10)
+  expect(s.fire('a', m)).toBe(s.fire('a', m))
+  expect(s.fire('a', m)).toBe(s.fire('a', m2)) // name set when `m` declared
+
+  expect(s.fire('a', () => 1)).toBe(s.fire('a', () => 1)) // same body no names
+  expect(s.fire('a', m)).not.toBe(s.fire('a', m3)) // same body but different name
+})

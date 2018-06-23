@@ -6,22 +6,17 @@ import { _throw, ErrorCode } from './errors'
 
 import { AsSubjects, AsCallbacks, AsBehaviors, AsObservables } from './types'
 
-export interface EmitOptions<V, T> {
-  // cacheName?: string
-  noThrow?: boolean
-  map?: (v: T) => V
-}
-
 export type EmitType<K, T> =
   K extends null ?
-    () => void :
-    T extends undefined ?
-    (v: K) => void :
-    (v: T) => void
+  () => void :
+  T extends undefined ?
+  (v: K) => void :
+  (v: T) => void
 
 export class SignalWrap<S extends {}> {
   private _cb: AsCallbacks<S> = {} as any
   private _$: AsSubjects<S> = {} as any
+  private _cache = {} as any
 
   $ = <K extends keyof S> (k: K): Observable<S[K]> =>
     (this._$[k] || this._add(k))
@@ -37,7 +32,11 @@ export class SignalWrap<S extends {}> {
   fire = <K extends keyof S, T = undefined> (k: K, map?: (v: T) => S[K]): EmitType<S[K], T> => {
     let cb: any = this._cb[k] || _throw(ErrorCode.SIGNAL_TO_VOID)
     if (map) {
-      cb = (v: T) => (this._cb as any)[k](map(v))
+      const key = `${k}__${map.name || map.toString()}`
+      cb = this._cache[key]
+      if (!cb) {
+        cb = this._cache[key] = (v: T) => (this._cb as any)[k](map(v))
+      }
     }
     return cb
   }
