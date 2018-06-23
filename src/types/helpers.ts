@@ -15,5 +15,5 @@ export type AsBehaviors<T extends {}> = {
 }
 
 export type AsCallbacks<T extends {}> = {
-  [k in keyof T]: (k: T[k]) => void
+  [k in keyof T]: T[k] extends never ? () => void : (k: T[k]) => void
 }
