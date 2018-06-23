@@ -7,15 +7,13 @@ import { _throw, ErrorCode } from './errors'
 import { AsSubjects, AsCallbacks, AsBehaviors, AsObservables } from './types'
 
 export type EmitType<K, T> =
-  K extends null ?
-  () => void :
-  T extends undefined ?
-  (v: K) => void :
+  K extends null ? () => void :
+  T extends undefined ? (v: K) => void :
   (v: T) => void
 
-export class SignalWrap<S extends {}> {
-  private _cb: AsCallbacks<S> = {} as any
-  private _$: AsSubjects<S> = {} as any
+export class SignalsFire<S extends {}> {
+  protected _cb: AsCallbacks<S> = {} as any
+  protected _$: AsSubjects<S> = {} as any
   private _cache = {} as any
 
   $ = <K extends keyof S> (k: K): Observable<S[K]> =>
@@ -32,6 +30,8 @@ export class SignalWrap<S extends {}> {
   fire = <K extends keyof S, T = undefined> (k: K, map?: (v: T) => S[K]): EmitType<S[K], T> => {
     let cb: any = this._cb[k] || _throw(ErrorCode.SIGNAL_TO_VOID)
     if (map) {
+      // todo: this is not ideal - one better option could be force cache name
+      // todo: count number of caches and throw if too many + option too ignore / set limit
       const key = `${k}__${map.name || map.toString()}`
       cb = this._cache[key]
       if (!cb) {
@@ -48,21 +48,41 @@ export class SignalWrap<S extends {}> {
   }
 }
 
-export class BehaviorsWrap<S extends {}> {
-  private _$: AsBehaviors<S> = {} as any
-  private _cb: AsCallbacks<S> = {} as any
+export class BehaviorsFire<S extends {}> extends SignalsFire<S> {
+  v: <K extends keyof S> (k: K) => S[K]
+  vs: <K extends keyof S> (ks?: K[]) => Pick<S, K>
 
-  constructor (s: S) {
-    Object.keys(s)
+  protected _$: AsBehaviors<S> = {} as any
+  protected _cb: AsCallbacks<S> = {} as any
+  private _spec: S
+
+  constructor (spec: S) {
+    super()
+    this._spec = spec
+    Object.keys(spec)
       .forEach(k => {
-        (this._$ as any)[k] = new BehaviorSubject<any>((s as any)[k]);
+        (this._$ as any)[k] = new BehaviorSubject<any>((spec as any)[k]);
         (this._cb as any)[k] = (p: any) => (this._$ as any)[k].next(p)
       })
+
+    this.v = this.value
+    this.vs = this.values
   }
 
-  $ = <K extends keyof S> (k: K | K[]): Observable<S[K]> =>
-    Array.isArray(k) ? Observable.from(k).mergeMap(key => this._$[key]) : this._$[k]
+  // we know
+  $s = <K extends keyof S> (ks?: K[]): never extends K ? AsObservables<S> : Pick<AsObservables<S>, K> =>
+    this._$ as any
 
-  cb = <K extends keyof S> (k: K): ((p: S[K]) => void) => this._cb[k]
+  value = <K extends keyof S> (k: K): S[K] => this._$[k].value
 
+  values = <K extends keyof S> (ks?: K[]): never extends K ? S : Pick<S, K> =>
+    ks ? ks.reduce((acc, k) => {
+      (acc as any)[k] = this._$[k].value
+      return acc
+    }, {} as Pick<S, K>) : (this as any).values(Object.keys(this._spec))
+
+  reset = <K extends keyof S> (ks?: K | K[]): void =>
+    !ks ? this.reset(Object.keys(this._$) as K[]) :
+      !Array.isArray(ks) ? this.reset([ks]) :
+        ks.forEach(k => this._$[k].next(this._spec[k]))
 }
