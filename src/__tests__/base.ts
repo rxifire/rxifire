@@ -4,8 +4,15 @@ import { Observable as $ } from 'rxjs/Observable'
 import { _throw, ErrorCode, RxifireError } from '../errors'
 import { SignalsFire, BehaviorsFire } from '../streams'
 
-test('_throw', () => {
+test('errors - _throw', () => {
   expect(() => _throw(ErrorCode.SIGNAL_TO_VOID)).toThrowError(RxifireError)
+})
+
+test('errors - JSON', () => {
+  const err1 = JSON.parse(new RxifireError(ErrorCode.SIGNAL_TO_VOID).toJSON())
+  const err2 = JSON.parse(new RxifireError(ErrorCode.SIGNAL_TO_VOID).toJSON(true))
+  expect(err1.status).toBe(ErrorCode.SIGNAL_TO_VOID)
+  expect(err2.status).toBe(ErrorCode.SIGNAL_TO_VOID)
 })
 
 interface Behaviors {
@@ -112,5 +119,7 @@ test('behaviors - reset', () => {
     .do(() => { expect(bh.v('a')).toBe(3); expect(bh.v('b')).toBe('BB') })
     .do(() => bh.reset())
     .do(() => { expect(bh.vs()).toEqual(start) })
+    .do(() => { bh.fire('a')(3); expect(bh.v('a')).toBe(3) })
+    .do(() => { bh.reset('a'); expect(bh.v('a')).toBe(start.a) })
     .toPromise()
 })

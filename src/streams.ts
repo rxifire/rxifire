@@ -6,6 +6,9 @@ import { _throw, ErrorCode } from './errors'
 
 import { AsSubjects, AsCallbacks, AsBehaviors, AsObservables } from './types'
 
+// todo: consider option of async firing / definition which fires should run on animation thread
+// todo: once landed in TS adjust to variadic params https://github.com/Microsoft/TypeScript/pull/24897
+
 export type EmitType<K, T> =
   K extends null ? () => void :
   T extends undefined ? (v: K) => void :
