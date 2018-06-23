@@ -40,7 +40,7 @@ In the docs of react (up to version 15.3.2) one could find:
 
 > In an ideal world, most of your components would be stateless functions because in the future we’ll also be able to make performance optimizations specific to these components by avoiding unnecessary checks and memory allocations. This is the recommended pattern, when possible.
 
-The sentence disappeared, as the react team started experimenting with async rendering, but `pureness` is nonetheless really beneficial. Possible optimizations are one thing, but much more important is reasoning about the code. A functional component is 100% predictable, 100% reusable and could be just think of as a markup / template engine on steroids.
+The sentence disappeared, as the react team started experimenting with async rendering, but `pureness` is nonetheless really beneficial. Possible optimizations are one thing, but much more important is reasoning about the code. A functional component is 100% predictable, 100% reusable and could be just thought of as a markup / template engine on steroids.
 As a side effect (pun intended) of having most of the views in the project pure, one can easily organize the work team around it. Some team members may specialize in working (just) with views - the work can be very easily parallelized. Since a view is just a deterministic projection, mocking the state allows easy testing. On top of that pure views are ideal when targeting multiple environments (e.g. React and React Native).
 
 #### Why logic should be a function from input Observables to one output Observable
@@ -179,15 +179,14 @@ I would be more than happy if you indeed decided to _subscribe_ to this new pers
 
 _Process_ is a very broad and extremely interesting concept.
 
-There is [process philosophy](https://en.wikipedia.org/wiki/Process_philosophy).
-
 From materialistic perspective **everything** is a process. There are physical processes and chemical reactions. A turtle is a process and _turtles all the way down_. 
 Thinking is a process, human being is a process. Actually _human being_ is a bit of misnomer - better would: _human becoming_ - similarly as Stan Grof prefers to call himself Stan _Grofing_. There are social processes.
 
-Everything that every existed was somehow created and increasing entropy of the universe will eventually take care of it.
+Everything that every existed was _somehow_ created and increasing entropy of the universe will eventually take care of it.
 
-One has to go metaphysical to ponder concepts / entities which may not be a process, but the ground is shaky at best, as the act of pondering is a process itself.
+There is [process philosophy](https://en.wikipedia.org/wiki/Process_philosophy).
 
+One has to go metaphysical to ponder concepts / entities which may not be a process, but the ground is shaky at best, as the act of pondering is a process itself. Even one of the safest bet for a non-process: _Nothingness_  can actually be seen as a process. Still not sure if more like `.empty` or `.never`.
 
 ### [TODO]
 
