@@ -19,7 +19,10 @@ test('signal - basic', () => {
   const s = new SignalWrap<Signals>()
   const { a, b, c, d } = s.$s(['a', 'b', 'c', 'd'])
   return $.merge(
-    a, b, c, d,
+    a.do(r => expect(r).toBe(1)),
+    b.do(r => expect(r).toBe('b')),
+    c.do(r => expect(r.a).toBe(2)),
+    d.do(r => expect(r).toBe(undefined)),
     $.of(false)
       .do(() => {
         s.fire('a')(1)
@@ -30,7 +33,6 @@ test('signal - basic', () => {
       .ignoreElements()
   )
     .take(4)
-    .toArray()
     .toPromise()
 })
 
@@ -38,20 +40,17 @@ test('signal - basic', () => {
 test('signal - map cb value to proper type and fire', () => {
   const s = new SignalWrap<Signals>()
   const a = s.$('a')
-  const cbObj: (cb: (p: { n: number }) => void) => void = (cb) => {
-    cb({ n: 42 })
-  }
-  const cbObj2: (cb: (p: string) => void) => void = (cb) => {
-    cb('42')
-  }
+  const c = s.$('c')
+  const cbObj: (cb: (p: { n: number }) => void) => void = (cb) => cb({ n: 42 })
+  const cbObj2: (cb: (p: string) => void) => void = (cb) => cb('42')
   return $.merge(
-    a,
+    a.take(2).do(x => expect(x).toBe(42)),
+    c.take(1).do(x => expect(x.a).toBe(43)).do(x => expect(x.b).toBe('B')),
     $.of(true)
       .do(() => cbObj(s.fire('a', (x: { n: number }) => x.n)))
       .do(() => cbObj2(s.fire('a', (x: string) => parseInt(x, 10))))
+      .do(() => cbObj2(s.fire('c', (x: string) => ({ a: parseInt(x, 10) + 1, b: 'B' }))))
       .ignoreElements()
   )
-    .take(2)
-    .do(x => expect(x).toBe(42))
     .toPromise()
 })
