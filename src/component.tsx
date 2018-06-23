@@ -1,6 +1,5 @@
 import * as React from 'react'
 
-import { Observable } from 'rxjs/Observable'
 import { BehaviorSubject } from 'rxjs/BehaviorSubject'
 import { Subject } from 'rxjs/Subject'
 
@@ -14,14 +13,8 @@ import { defer } from 'rxjs/observable/defer'
 
 import * as T from './types'
 
-export * from './types'
-export {
-  T,
-  T as types
-}
-
 // todo: temporarily here - convert to immutable, event based solution
-export class EffInfo implements T.EffInfo<any, any> {
+export class EffInfo implements T.EffInfoI<any, any> {
   _status = new BehaviorSubject<T.EffStatus>('active')
   error?: any
   result?: any
@@ -59,12 +52,10 @@ export class LogicMeta implements T.Meta {
     this.error = undefined
     this._status.next('loading')
   }
-
 }
 
-export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends {}, Contract extends T.EffectsContract> extends
-  React.Component<T.RxComponentProps<Props, UIEvents, UIState, Contract>> {
-  propsSub: BehaviorSubject<Props>
+// TODO: make it 100% React free
+export class ComponentCtrl<UIEvents extends {}, UIState extends {}, Contract extends T.EffectsContract> {
   meta: LogicMeta
   uiEventsSub: T.AsSubjects<UIEvents> = {} as any
   uiEventsCb: T.AsCallbacks<UIEvents> = {} as any
@@ -77,37 +68,42 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
   _state: UIState | null = null
   sub!: { unsubscribe: () => void, add: any }
 
-  constructor (p: T.RxComponentProps<Props, UIEvents, UIState, Contract>) {
-    super(p)
-    this.propsSub = new BehaviorSubject<Props>(this.props.props)
+  cfg: T.RxComponentProps<{}, UIEvents, UIState, Contract>
+  onUpdate!: () => void
+
+  constructor (cfg: T.RxComponentProps<{}, UIEvents, UIState, Contract>) {
+    // this.propsSub = new BehaviorSubject<Props>(this.props.props)
+    this.cfg = cfg
     this.meta = new LogicMeta()
 
-    p.config.uiEventsNames.forEach(n => {
+    cfg.config.uiEventsNames.forEach(n => {
       this.uiEventsSub[n] = new Subject<UIEvents[keyof UIEvents]>()
       this.uiEventsCb[n] = this.uiEventsSub[n].next.bind(this.uiEventsSub[n])
     })
 
-    this.View = p.view(this.uiEventsCb)
+    this.View = cfg.view(this.uiEventsCb)
 
-    this._initEffects(p)
+    this._initEffects(cfg)
   }
 
-  componentWillReceiveProps (p: T.RxComponentProps<Props, UIEvents, UIState, Contract>) {
-    this.propsSub.next(p.props)
+  public render () {
+    // todo: improve 'loading', either wait for state or require a loading template
+    return (this._state || this.cfg.config.unsafeLoading) && this.View(this._state!, this.viewExtra)
   }
 
-  componentDidMount () {
+  public activate = (onUpdate: () => void, propsSub: BehaviorSubject<any>) => {
+    this.onUpdate = onUpdate
     this.sub = this.meta._status
       .pipe(
         filter(s => s === 'loading'),
         tap(() => {
-          this._initEffects(this.props)
+          this._initEffects(this.cfg)
           this._state = null
-          this.forceUpdate()
+          this.onUpdate()
         }),
         switchMap(() =>
-          this.props.logic({
-            props: this.propsSub,
+          this.cfg.logic({
+            props: propsSub,
             uiEvents: this.uiEventsSub,
             eff: this.effects,
             meta: this.meta // most likely not needed here
@@ -117,16 +113,16 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
                 (s) => {
                   this.meta.is('loading') && this.meta._status.next('active')
                   this._state = s
-                  this.forceUpdate()
+                  this.onUpdate()
                 },
                 (err) => {
                   this.meta.error = err
                   this.meta._status.next('error')
-                  this.forceUpdate()
+                  this.onUpdate()
                 },
                 () => {
                   this.meta._status.next('completed')
-                  this.forceUpdate()
+                  this.onUpdate()
                 }
               ),
               retryWhen(() => this.meta._status)
@@ -134,20 +130,11 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
         )
       )
       .subscribe()
-
-    this.forceUpdate()
   }
 
-  componentWillUnmount () {
-    this.sub && this.sub.unsubscribe()
-  }
+  public dispose = () => this.sub && this.sub.unsubscribe()
 
-  render () {
-    // todo: improve 'loading', either wait for state or require a loading template
-    return (this._state || this.props.config.unsafeLoading) && this.View(this._state!, this.viewExtra)
-  }
-
-  private _initEffects (p: T.RxComponentProps<Props, UIEvents, UIState, Contract>) {
+  private _initEffects (p: { effects: T.Effects<Contract>}) {
     const f = {}
     const i = {};
     (this.effects as T.EffectsLogic<{}>) = {
@@ -159,12 +146,12 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
     }
     Object.keys(p.effects).forEach(e => {
       const eff = p.effects[e]
-      const info = this.effects.i[e] = new EffInfo(() => this.forceUpdate)
+      const info = this.effects.i[e] = new EffInfo(() => this.onUpdate)
 
       this.effects.f[e] = p => {
         if (info.is('active')) {
           info._updateStatus('in-progress')
-          this.forceUpdate()
+          this.onUpdate()
           return defer(() => eff(p)) // Observable or promise
             .pipe(
               tap(
@@ -187,7 +174,32 @@ export class RxComponent<Props extends {}, UIEvents extends {}, UIState extends 
       }
     })
   }
+}
 
+export class ReactComponent<Props extends {}, UIEvents, UIState, Contract extends T.EffectsContract>
+  extends React.Component<T.RxComponentProps<Props, UIEvents, UIState, Contract>> {
+  propsSub: BehaviorSubject<Props>
+  ctrl: ComponentCtrl<UIEvents, UIState, Contract>
+
+  constructor (p: T.RxComponentProps<Props, UIEvents, UIState, Contract>) {
+    super(p)
+    this.propsSub = new BehaviorSubject<Props>(this.props.props)
+    this.ctrl = new ComponentCtrl(this.props)
+  }
+
+  componentWillReceiveProps (p: T.RxComponentProps<Props, UIEvents, UIState, Contract>) {
+    this.propsSub.next(p.props)
+  }
+
+  componentDidMount () {
+    this.ctrl.activate(this.forceUpdate.bind(this), this.propsSub)
+  }
+
+  componentWillUnmount () {
+    this.ctrl.dispose()
+  }
+
+  render () { return this.ctrl.render() }
 }
 
 function configWithDefaults<UIEvents> (cfg?: T.Config<UIEvents>): T.ConfigInternal<UIEvents> {
@@ -198,7 +210,7 @@ function configWithDefaults<UIEvents> (cfg?: T.Config<UIEvents>): T.ConfigIntern
   return Object.assign(op, cfg)
 }
 
-export const createRxComponent = <
+export const createReactComponent = <
   Props,
   UIEvents = {},
   UIState = {},
@@ -210,7 +222,7 @@ export const createRxComponent = <
   config?: T.Config<UIEvents>
   ) =>
   (p: Props) =>
-    <RxComponent
+    <ReactComponent
       props={p}
       logic={logic as any}
       view={view}

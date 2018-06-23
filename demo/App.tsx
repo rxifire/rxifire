@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as Rx from 'rxjs'
 
-import { createRxComponent, T } from '../src'
+import { createReactComponent, T } from '../src'
 
 const $ = Rx.Observable
 
@@ -51,6 +51,6 @@ export const view: T.View<UIEvents, Props, EffectsContract> = (cb) => (ps, { eff
   </div>
 }
 
-export default createRxComponent<Props, UIEvents, Props, EffectsContract>(logic, view, effects, {
+export default createReactComponent<Props, UIEvents, Props, EffectsContract>(logic, view, effects, {
   uiEventsNames: ['click']
 })

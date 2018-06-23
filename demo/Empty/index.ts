@@ -1,5 +1,5 @@
 import { Observable as $ } from 'rxjs'
-import { createRxComponent } from '../../src'
+import { createReactComponent } from '../../src'
 
 import * as T from './empty.types'
 
@@ -10,7 +10,7 @@ const effects: T.Effects = {
   mockSpecial: n => $.of('SPECIAL-ITEM').delay(n * 1000)
 }
 
-const comp = createRxComponent<T.Props, T.UIEvents, T.UIState, T.EffectsContract>(logic, view, effects, {
+const comp = createReactComponent<T.Props, T.UIEvents, T.UIState, T.EffectsContract>(logic, view, effects, {
   uiEventsNames: ['empty', 'special', 'kill', 'resurect']
 })
 

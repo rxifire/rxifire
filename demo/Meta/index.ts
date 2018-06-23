@@ -1,6 +1,6 @@
 import { Observable as $ } from 'rxjs/Observable'
 
-import { createRxComponent } from '../../src'
+import { createReactComponent } from '../../src'
 
 import * as T from './meta.types'
 
@@ -12,7 +12,7 @@ const effects: T.Effects = {
   fireError: (ms) => $.timer(ms).mergeMapTo($.throw(new Date()))
 }
 
-const comp = createRxComponent<T.Props, T.UIEvents, T.UIState, T.EffectsContract>(logic, view, effects, {
+const comp = createReactComponent<T.Props, T.UIEvents, T.UIState, T.EffectsContract>(logic, view, effects, {
   unsafeLoading: true,
   uiEventsNames: ['forceComplete', 'forceError']
 })

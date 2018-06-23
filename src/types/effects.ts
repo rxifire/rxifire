@@ -32,12 +32,12 @@ export type EffectsLogic<T extends EffectsContract> = {
 export type EffectsView<T extends EffectsContract> = EffectsInfos<T>
 
 export type EffectsInfos<T extends EffectsContract> = {
-  [k in keyof T]: EffInfo<T[k][1], T[k][2]>
+  [k in keyof T]: EffInfoI<T[k][1], T[k][2]>
 }
 
 export type EffStatus = 'active' | 'in-progress' | 'success' | 'error'
 
-export interface EffInfo<R, E> {
+export interface EffInfoI<R, E> {
   status: EffStatus
   result?: R // in-case of success
   error?: E // in-case of error
