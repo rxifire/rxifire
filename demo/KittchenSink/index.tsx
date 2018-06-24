@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Observable } from 'rxjs'
 
 import * as F$ from '../../src'
-import { ActionsSpec, Actions } from '../../src/actions/actions'
+import { Actions } from '../../src/actions/actions'
 
 export type DoB = { day: number, month: number, year: number }
 export type Pos = { x: number, y: number }
