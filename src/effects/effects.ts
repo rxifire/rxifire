@@ -1,1 +1,1 @@
-export const e = ''
+export const E = 'e'
