@@ -13,12 +13,9 @@ import { defer } from 'rxjs/observable/defer'
 
 import * as E from '../effects/types'
 import * as H from '../utils/types'
+import * as T from './types'
 
-/// todo - remove
-import * as T from '../iter0/types'
-
-// todo: temporarily here - convert to immutable, event based solution
-export class EffInfo implements E.EffInfoI<any, any> {
+export class EffInfo {
   _status = new BehaviorSubject<E.EffStatus>('active')
   error?: any
   result?: any
@@ -43,7 +40,7 @@ export class EffInfo implements E.EffInfoI<any, any> {
   }
 }
 
-export class LogicMeta implements T.Meta {
+export class LogicMeta {
   _status = new BehaviorSubject<T.LogicStatus>('loading')
   // resets = new Subject<never>()
 
@@ -67,7 +64,7 @@ export class ComponentCtrl<UIEvents extends {}, UIState extends {}, Contract ext
   effects!: E.EffectsLogic<Contract>
 
   View: (s: UIState, extra: T.ViewExtra<Contract>) => JSX.Element
-  viewExtra!: T.ViewExtra<Contract>
+  viewExtra!: any // T.ViewExtra<Contract>
 
   _state: UIState | null = null
   sub!: { unsubscribe: () => void, add: any }
@@ -213,23 +210,3 @@ function configWithDefaults<UIEvents> (cfg?: T.Config<UIEvents>): T.ConfigIntern
   }
   return Object.assign(op, cfg)
 }
-
-// export const createReactComponent = <
-//   Props,
-//   UIEvents = {},
-//   UIState = {},
-//   Contract extends E.EffectsContract = {}>
-//   (
-//   logic: E.Logic<Props, UIEvents, UIState, Contract>,
-//   view: E.View<UIEvents, UIState, Contract>,
-//   effects: E.Effects<Contract>,
-//   config?: E.Config<UIEvents>
-//   ) =>
-//   (p: Props) =>
-//     <ReactComponent
-//       props={p}
-//       logic={logic as any}
-//       view={view}
-//       effects={effects}
-//       config={configWithDefaults(config)}
-//     />
