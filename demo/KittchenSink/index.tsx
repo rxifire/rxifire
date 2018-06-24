@@ -7,7 +7,7 @@ export type DoB = { day: number, month: number, year: number }
 export type Pos = { x: number, y: number }
 
 export interface Signals {
-  click: never
+  click: null
   pos: Pos
 }
 
@@ -20,27 +20,37 @@ export type State = {
   pos: Pos
 }
 
-export const spec: F$.ComponentSpec<State, Signals, Behaviors> = {
+type Spec = F$.ComponentSpec<State, Signals, Behaviors>
+
+export const spec: Spec = {
   defaultBehaviors: {
     name: '', dob: undefined as DoB | undefined, count: 0, x: '0'
   },
-  signalsToBehaviors: {
-    click: {
-      count: (v) => v + 1
-    },
-    pos: {
-      x: (c, pos) => pos.x + ''
-    }
-  }
- // stats: ['count', 'dob','name']
+  behaviorsStats: ['count', 'dob', 'name'] // as (keyof Behaviors | keyof Signals)[]
 }
 
-const log: F$.Logic<typeof spec> = ({ beh, sig }) => {
+const log: F$.Logic<Spec> = ({ beh, sig }) => {
   beh.$('dob')
   sig.$('click')
   return Observable.of({ name: 'ab', pos: { x: 0, y: 0 } })
 }
 
-const view: F$.View<typeof spec> = ps => s => {
+const view: F$.View<Spec> = ps => s => {
   return <h1>HELLO ${s.name}</h1>
 }
+
+type S = {
+  a: string, b: number
+}
+
+// type Sp<T extends {} = {}, W extends {} = {}, B extends {} = {}> = {
+//   ks?: (keyof T)[]
+//   ws?: (keyof W)[]
+//   xs?: (keyof (T & W & B))[]
+// }
+
+// const l: Sp<S> = {
+//   ks: ['b', 'a'],
+//   ws: [],
+//   xs: ['']
+// }

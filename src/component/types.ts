@@ -1,19 +1,19 @@
 import { Observable } from 'rxjs'
 import * as P from './types.priv'
 
+type AsStats<B, S> = NonNullable<true | (keyof B | keyof S)[]>
+
 export type ComponentSpec<State = {}, Signals extends {} = {}, Behaviors extends {} = {}> = {
   defaultBehaviors?: Behaviors
   // todo: allow setting what actions should be permitted in view & state - priority low
-  signalsToBehaviors?: Partial<{
-    [K in keyof Signals]: P.SignalToBehaviors<Signals, Behaviors, K>
-  }>
 
-  // todo: figure out what's wrong
-  stats?: string[] | true
-  // stats?: (keyof Behaviors)[]
+  // stats?: string[] | true
+  // todo: figure out what's wrong - looks like TS bug
 
   externalStreams?: any
 
+  signalsStats?: (keyof Signals)[] | any
+  behaviorsStats?: (keyof Behaviors)[] | any
   // todo: hide it from external world - priority very low
   __F$__?: [State, Signals, Behaviors]
 }
@@ -26,3 +26,8 @@ export type createReactComponent<P = {}> =
   (spec: ComponentSpec, view: View<any>, logic?: Logic<any>) => (props: P) => JSX.Element
 
 export type LogicStatus = 'loading' | 'active' | 'completed' | 'error'
+
+// most likely not needed
+// signalsToBehaviors?: Partial<{
+//   [K in keyof Signals]: P.SignalToBehaviors<Signals, Behaviors, K>
+// }>
