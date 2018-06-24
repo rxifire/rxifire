@@ -1,9 +1,7 @@
-import * as T from './types'
+export * from './component/types'
+export * from './effects/types'
 
-export * from './types'
-export {
-  T,
-  T as types
-}
+export * from './utils/sig-beh'
 
-export * from './component'
+export * from './component/component'
+export * from './effects/effects'

@@ -2,7 +2,7 @@ import 'rxjs-compat'
 import { Observable as $ } from 'rxjs/Observable'
 
 import { _throw, ErrorCode, RxifireError } from '../errors'
-import { SignalsFire, BehaviorsFire } from '../streams'
+import { SignalsFire, BehaviorsFire } from '../sig-beh'
 
 test('errors - _throw', () => {
   expect(() => _throw(ErrorCode.SIGNAL_TO_VOID)).toThrowError(RxifireError)
