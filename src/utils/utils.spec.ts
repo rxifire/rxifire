@@ -1,8 +1,8 @@
 import 'rxjs-compat'
 import { Observable as $ } from 'rxjs/Observable'
 
-import { _throw, ErrorCode, RxifireError } from '../errors'
-import { SignalsFire, BehaviorsFire } from '../sig-beh'
+import { _throw, ErrorCode, RxifireError } from './errors'
+import { SignalsF$, BehaviorsF$ } from './sig-beh'
 
 test('errors - _throw', () => {
   expect(() => _throw(ErrorCode.SIGNAL_TO_VOID)).toThrowError(RxifireError)
@@ -30,7 +30,7 @@ const start: Behaviors = {
 }
 
 test('signal - basic', () => {
-  const sg = new SignalsFire<Signals>()
+  const sg = new SignalsF$<Signals>()
   const { a, b, c, d } = sg.$s(['a', 'b', 'c', 'd'])
   return $.merge(
     a.do(r => expect(r).toBe(1)),
@@ -52,7 +52,7 @@ test('signal - basic', () => {
 
 // handful in case of event.target.value to signal
 test('signal - map cb value to proper type and fire', () => {
-  const sg = new SignalsFire<Signals>()
+  const sg = new SignalsF$<Signals>()
   const a = sg.$('a')
   const c = sg.$('c')
   const cbObj: (cb: (p: { n: number }) => void) => void = (cb) => cb({ n: 42 })
@@ -70,11 +70,11 @@ test('signal - map cb value to proper type and fire', () => {
 })
 
 test('signal - throws when fire cb accessed before stream', () =>
-  expect(() => new SignalsFire<Signals>().fire('a')).toThrowError(RxifireError)
+  expect(() => new SignalsF$<Signals>().fire('a')).toThrowError(RxifireError)
 )
 
 test('signal - cache', () => {
-  const sg = new SignalsFire<Signals>()
+  const sg = new SignalsF$<Signals>()
   sg.$('a')
   const cb1 = sg.fire('a')
   const cb2 = sg.fire('a')
@@ -90,7 +90,7 @@ test('signal - cache', () => {
 })
 
 test('behaviors - basic', () => {
-  const bh = new BehaviorsFire<Behaviors>(start)
+  const bh = new BehaviorsF$<Behaviors>(start)
   const { a, b, c } = bh.$s()
   return $.zip(a, b, c)
     .take(2)
@@ -108,7 +108,7 @@ test('behaviors - basic', () => {
 })
 
 test('behaviors - reset', () => {
-  const bh = new BehaviorsFire<Behaviors>(start)
+  const bh = new BehaviorsF$<Behaviors>(start)
   const { a, b } = bh.$s()
   return $.zip(a, b)
     .take(2)
@@ -122,4 +122,13 @@ test('behaviors - reset', () => {
     .do(() => { bh.fire('a')(3); expect(bh.v('a')).toBe(3) })
     .do(() => { bh.reset('a'); expect(bh.v('a')).toBe(start.a) })
     .toPromise()
+})
+
+test('behaviors - updated', () => {
+  const bh = new BehaviorsF$<{ count: number }>({ count: 0 })
+  bh.update('count')(o => o + 1)
+  expect(bh.v('count')).toBe(1)
+  const two = 2
+  bh.update('count')(o => o + two)
+  expect(bh.v('count')).toBe(3)
 })

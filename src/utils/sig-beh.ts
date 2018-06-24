@@ -14,7 +14,7 @@ export type EmitType<K, T> =
   T extends undefined ? (v: K) => void :
   (v: T) => void
 
-export class SignalsFire<S extends {}> {
+export class SignalsF$<S extends {}> {
   protected _cb: AsCallbacks<S> = {} as any
   protected _$: AsSubjects<S> = {} as any
   private _cache = {} as any
@@ -51,7 +51,7 @@ export class SignalsFire<S extends {}> {
   }
 }
 
-export class BehaviorsFire<S extends {}> extends SignalsFire<S> {
+export class BehaviorsF$<S extends {}> extends SignalsF$<S> {
   v: <K extends keyof S> (k: K) => S[K]
   vs: <K extends keyof S> (ks?: K[]) => Pick<S, K>
 
@@ -75,6 +75,9 @@ export class BehaviorsFire<S extends {}> extends SignalsFire<S> {
   // we know
   $s = <K extends keyof S> (ks?: K[]): never extends K ? AsObservables<S> : Pick<AsObservables<S>, K> =>
     this._$ as any
+
+  update = <K extends keyof S> (k: K) => (up: (v: S[K]) => S[K]): void =>
+    this._$[k].next(up(this._$[k].value))
 
   value = <K extends keyof S> (k: K): S[K] => this._$[k].value
 
