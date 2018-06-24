@@ -1,15 +1,14 @@
 import { Observable } from 'rxjs'
 import { BehaviorsFire, SignalsFire } from '../utils/sig-beh'
 
-export type Logic<T extends ComponentSpec> = (ps: LogicParams<T, NonNullable<T['_signals']>>) => Observable<NonNullable<T['_state']>>
+export type Logic<T extends ComponentSpec> = (ps: LogicParams<T, NonNullable<T['__F$__']>[1]>) => Observable<NonNullable<T['__F$__']>[0]>
 
 export type View = (state: any, ps: any) => JSX.Element
 
-export type ComponentSpec<State = any, Signals = {}, Behaviors = {}> = {
+export type ComponentSpec<State = {}, Signals extends {} = {}, Behaviors extends {} = {}> = {
   behaviorDefaults?: Behaviors
 
-  _state?: State
-  _signals?: Signals
+  __F$__?: [State, Signals]
 }
 
 export type LogicParams<T extends ComponentSpec, Sig = undefined> =

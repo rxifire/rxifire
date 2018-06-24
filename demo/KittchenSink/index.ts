@@ -27,5 +27,5 @@ export const spec: F$.ComponentSpec<State, Signals, Behaviors> = {
 const log: F$.Logic<typeof spec> = ({ beh, sig }) => {
   beh.$('dob')
   sig.$('click')
-  return Observable.of({ name: '', pos: { x: 0, y: 0 } })
+  return Observable.of({ name: 'ab', pos: { x: 0, y: 0 } })
 }
