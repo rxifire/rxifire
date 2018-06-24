@@ -1,5 +1,5 @@
 export * from './component/types'
-export * from './effects/types'
+// export * from './effects/types'
 
 export * from './utils/sig-beh'
 
