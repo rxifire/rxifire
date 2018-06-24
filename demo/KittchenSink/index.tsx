@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Observable } from 'rxjs'
 
 import * as F$ from '../../src'
+import { ActionsSpec, Actions } from '../../src/actions/actions'
 
 export type DoB = { day: number, month: number, year: number }
 export type Pos = { x: number, y: number }
@@ -20,16 +21,31 @@ export type State = {
   pos: Pos
 }
 
-type Spec = F$.ComponentSpec<State, Signals, Behaviors>
+type ActionsSpc = {
+  asyncA: [number, string, null, null],
+  asyncB: [string, string[], null, null]
+  asyncUp: [string, string[], null, number]
+}
+
+type Spec = F$.ComponentSpec<State, Signals, ActionsSpc, Behaviors>
+
+export const effectsC: Actions<ActionsSpc> = {
+  asyncA: (n) => Observable.of(`${n}`),
+  asyncB: (s) => Observable.of(s.split('')),
+  asyncUp: (s) => Observable.of(s.split('')).map(x => ({ result: x })).delay(2000)
+    .merge(Observable.timer(0, 2000).map(x => ({ update: x })))
+}
 
 export const spec: Spec = {
   defaultBehaviors: {
     name: '', dob: undefined as DoB | undefined, count: 0, x: '0'
   },
-  behaviorsStats: ['count', 'dob', 'name'] // as (keyof Behaviors | keyof Signals)[]
+  actions: effectsC
+
+  // stats: ['count', 'dob', 'name']
 }
 
-const log: F$.Logic<Spec> = ({ beh, sig }) => {
+const log: F$.Logic<Spec> = ({ beh, sig, eff }) => {
   beh.$('dob')
   sig.$('click')
   return Observable.of({ name: 'ab', pos: { x: 0, y: 0 } })
@@ -38,19 +54,3 @@ const log: F$.Logic<Spec> = ({ beh, sig }) => {
 const view: F$.View<Spec> = ps => s => {
   return <h1>HELLO ${s.name}</h1>
 }
-
-type S = {
-  a: string, b: number
-}
-
-// type Sp<T extends {} = {}, W extends {} = {}, B extends {} = {}> = {
-//   ks?: (keyof T)[]
-//   ws?: (keyof W)[]
-//   xs?: (keyof (T & W & B))[]
-// }
-
-// const l: Sp<S> = {
-//   ks: ['b', 'a'],
-//   ws: [],
-//   xs: ['']
-// }
