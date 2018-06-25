@@ -1,5 +1,6 @@
 export enum ErrorCode {
-  SIGNAL_TO_VOID = 4000
+  SIGNAL_TO_VOID = 4000,
+  FIRE_IN_PROGRESS = 4100
 }
 
 export type EnumMap = {
@@ -7,7 +8,8 @@ export type EnumMap = {
 }
 
 const StatusToMessage: EnumMap = {
-  4000: 'If a tree falls in the forest and no one is there, does it still make a sound.'
+  4000: 'If a tree falls in the forest and no one is there, does it still make a sound.',
+  4100: 'If you chase two rabbits, you will catch neither one.'
 }
 
 export class RxifireError extends Error {

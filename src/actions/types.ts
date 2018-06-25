@@ -3,60 +3,33 @@ import { Milliseconds } from '../'
 
 export type Status = 'idle' | 'in-progress' | 'success' | 'error' // todo: consider inactive | interrupted
 
-type WithTime<Res> = Array<{ at: Milliseconds, value: Res }>
-
-export interface Fired {
-  status: Status
-  firedAt: Milliseconds
-}
-
-export interface Done {
-  status: 'success' | 'error'
-  doneAt: Milliseconds
-}
-
-export interface InProgress<Up> extends Fired {
-  status: 'in-progress'
-  updates: WithTime<Up>
-}
-
-export type InProgressMulti = never // todo
-
-export interface Success<Res, Multi extends boolean = false> extends Fired, Done {
-  status: 'success',
-  result: Multi extends false ? Res : WithTime<Res>
-}
-
-export interface Error<Err> extends Fired, Done {
-  status: 'error',
-  error: Err
-}
-
-export type StatusToState<S extends Status> =
-  S extends 'in-progress' ? InProgress<any> :
-  S extends 'success' ? Success<any> :
-  S extends 'error' ? Error<any>
-  : never // 'idle'
+export type InProgressRefire =
+  'not-allowed' // throw - default
+  | 'restart' // like .switch
+  | 'join' // like .share - will get the result
+  | 'ignore' // $.empty()
 
 export type Actions<T extends AsActionsIO<any>> = {
   [K in keyof T]: P.Action<T[K]>
 }
 
-export type AsActionsIO<T extends {}> = T extends {
-  [k: string]: P.ActionIO
-} ? T : never
-
 type ActionSpec<T extends P.ActionIO> = {
   warnAfter: Milliseconds // action takes longer than expected
   timeout: Milliseconds  // .timeout(ms)
   cacheFor: Milliseconds // caches successful result for that long
+  inProgressRefire: InProgressRefire
 
   // todo - consider
-  persistentCache?: boolean // false - would require passing persistence mechanism
-  stats?: boolean // keep them automatically
-  history?: boolean | number // no history for now
+  // persistentCache?: boolean // false - would require passing persistence mechanism
+  // stats?: boolean // keep them automatically
+  // history?: boolean | number // no history for now
+  // onlyThisInProgress?: boolean // block all others, rather tricky to get right all cases
 }
 
 export type ActionsSpec<T extends AsActionsIO<any>> = {
   [K in keyof T]?: Partial<ActionSpec<T[K]>>
 }
+
+export type AsActionsIO<T extends {}> = T extends {
+  [k: string]: P.ActionIO
+} ? T : { F$_TYPE_ERROR: 'ActionsIO must be of form [Params, Result, Update | null]. [todo more info]' }

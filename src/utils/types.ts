@@ -21,3 +21,5 @@ export type AsCallbacks<T extends {}> = {
 // todo: make them pseudo opaque
 export type Seconds = number
 export type Milliseconds = number
+
+export type DateMs = Milliseconds
