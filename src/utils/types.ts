@@ -17,3 +17,7 @@ export type AsBehaviors<T extends {}> = {
 export type AsCallbacks<T extends {}> = {
   [k in keyof T]: T[k] extends null ? () => void : (k: T[k]) => void
 }
+
+// todo: make them pseudo opaque
+export type Seconds = number
+export type Milliseconds = number
