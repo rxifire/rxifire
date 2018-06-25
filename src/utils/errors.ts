@@ -45,6 +45,7 @@ export const _throw = (status: ErrorCode, context?: object): never => {
   throw new RxifireError(status, context)
 }
 
+/* istanbul ignore next */
 export const _unreachable = (x: never): never => {
   throw new RxifireError(ErrorCode.UNREACHABLE)
 }

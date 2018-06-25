@@ -8,7 +8,7 @@ import { RxifireError } from '../utils/errors'
 type IO = AsActionsIO<{
   prom: [number, string, null],
   obs: [string, string[], null],
-  never: [never, never, null]
+  never: [null, never, null]
 }>
 
 const acts: Actions<IO> = {
@@ -19,7 +19,7 @@ const acts: Actions<IO> = {
 
 const spec: ActionsSpec<IO> = {
   never: {
-    warnAfter: 2, timeout: 4
+    warnAfter: 4, timeout: 10
   }
 }
 
@@ -35,8 +35,7 @@ test('actions - idle', () => {
 test('actions - meta start', () => {
   const m = ctr.meta('obs')
   const ks = Object.keys(m)
-    .filter(k => m[k] !== undefined)
-  console.log(ks)
+    .filter(k => (m as any)[k] !== undefined)
   expect(ks.length).toBe(1)
   expect(ks[0]).toBe('status')
 })
@@ -48,8 +47,45 @@ test('actions - as throws', () => {
   expect(() => ctr.as('never', 'error')).toThrowError(RxifireError)
 })
 
-test('actions - simple fire', () => {
+test('actions - error', () =>
+  ctr.fire('never')()
+    .toPromise()
+    .catch(err => expect(err.name).toBe('TimeoutError'))
+)
+
+test('actions - warn', () =>
+  ctr.fire('never')()
+    .merge(
+      $.timer(5)
+        .do(() => expect(Date.now() - ctr.as('never', 'in-progress').warnedAt!)
+          .toBeLessThanOrEqual(3))
+    )
+    .toPromise()
+    .catch(err => {
+      expect(err.name).toBe('TimeoutError')
+    })
+)
+
+test('actions - cancel', () =>
+  ctr.fire('never')()
+    .merge(
+      $.timer(5)
+        .do(() => ctr.reset('never'))
+        .ignoreElements()
+    )
+    .defaultIfEmpty('EMPTY')
+    .toPromise()
+    .then(v => expect(v).toBe('EMPTY'))
+)
+
+test('actions - simple fire', () =>
   ctr.fire('prom')(2)
     .do(x => expect(x).toBe('2'))
-    .toPromise()
-})
+    .do(() => {
+      const m = ctr.as('prom', 'success')
+      expect(m.value).toBe('2')
+      expect(m.doneAt - m.firedAt).toBeGreaterThanOrEqual(0)
+      expect(Date.now() - m.doneAt)
+        .toBeLessThanOrEqual(2)
+    })
+    .toPromise())

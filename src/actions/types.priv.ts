@@ -44,11 +44,12 @@ export interface InProgress<Res, Upd> extends Fired {
   status: 'in-progress'
   updates: Upd[]
   cache?: Cache<Res>
+  warnedAt?: DateMs
 }
 
 export interface Success<Res> extends Fired, Done {
   status: 'success',
-  result: Res
+  value: Res
   // result: Multi extends false ? Res : WithTime<Res>
 }
 // type InProgressMulti = never // todo
@@ -67,10 +68,11 @@ export type StatusToState<S extends Status, Res, Upd> =
 export interface Cache<Res> { value: Res, set: DateMs, expired?: DateMs }
 
 export interface Meta<Res, Upd> {
-  [k: string]: any
+  // [k: string]: any
   status: Status
   firedAt?: DateMs
   doneAt?: DateMs
+  warnedAt?: DateMs
   updates?: Upd[]
   error?: any
   value?: Res
@@ -79,7 +81,7 @@ export interface Meta<Res, Upd> {
 }
 
 export interface MetaIn<Res, Upd> extends Meta<Res, Upd> {
-  [k: string]: any
+  // [k: string]: any
 
   inProgress?: Observable<Res>
   // until: Subject<any>
@@ -87,5 +89,5 @@ export interface MetaIn<Res, Upd> extends Meta<Res, Upd> {
 }
 
 export type Internal<A extends AsActionsIO<any>> = {
-  [K in keyof A]: [ActionsIn<A>[K], MetaIn<A[1], A[2]>, ActionsSpec<A>[K]]
+  [K in keyof A]: [ActionsIn<A>[K], MetaIn<A[1], A[2]>, NonNullable<ActionsSpec<A>[K]>]
 }
