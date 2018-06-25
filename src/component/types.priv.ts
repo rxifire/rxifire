@@ -1,6 +1,6 @@
 import { BehaviorsF$, SignalsF$ } from '../utils/sig-beh'
 import { ComponentSpec } from './types'
-import { ActionsIn } from '../actions/actions'
+import { Actions } from '../actions/types'
 
 type Spec = ComponentSpec<any, any, any, any>
 
@@ -15,7 +15,7 @@ export type SignalToBehaviors<S, B, From extends keyof S> = Partial<{
 export type LogicParams<T extends Spec> =
   (SpecToSig<T> extends undefined ? {} : { sig: SignalsF$<SpecToSig<T>> }) &
   (T['defaultBehaviors'] extends undefined ? {} : { beh: BehaviorsF$<NonNullable<T['defaultBehaviors']>> }) &
-  (T['actions'] extends undefined ? {} : { eff: ActionsIn<SpecToAct<T>> })
+  (T['actions'] extends undefined ? {} : { eff: Actions<SpecToAct<T>> })
 
 export type ViewParams<T extends Spec> =
   (SpecToSig<T> extends undefined ? {} : { sig: Pick<SignalsF$<SpecToSig<T>>, 'fire'> }) &

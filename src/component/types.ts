@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs'
 import * as P from './types.priv'
-import { ActionsSpec, Actions } from '../actions/actions'
+import { ActionsSpec, Actions } from '../actions/types'
 
 export type ComponentSpec<State, Signals extends {}, Act extends ActionsSpec, Behaviors extends {}> = {
   defaultBehaviors?: Required<Behaviors>

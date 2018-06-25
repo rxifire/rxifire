@@ -3,5 +3,4 @@ export * from './component/types'
 
 export * from './utils/sig-beh'
 
-export * from './component/component'
-export * from './effects/effects'
+export * from './actions'

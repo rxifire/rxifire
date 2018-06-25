@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Observable } from 'rxjs'
 
 import * as F$ from '../../src'
-import { Actions } from '../../src/actions/actions'
+import { Actions } from '../../src/actions/types'
 
 export type DoB = { day: number, month: number, year: number }
 export type Pos = { x: number, y: number }
@@ -22,9 +22,9 @@ export type State = {
 }
 
 type ActionsSpc = {
-  asyncA: [number, string, null, null],
-  asyncB: [string, string[], null, null]
-  asyncUp: [string, string[], null, number]
+  asyncA: [number, string, null],
+  asyncB: [string, string[], null]
+  asyncUp: [string, string[], number]
 }
 
 type Spec = F$.ComponentSpec<State, Signals, ActionsSpc, Behaviors>
