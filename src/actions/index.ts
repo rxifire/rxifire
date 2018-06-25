@@ -56,9 +56,7 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
             case 'not-allowed': return _throw(ErrorCode.FIRE_IN_PROGRESS)
             case 'ignore': return $.empty()
             case 'stop-then-refire': break
-            case 'join':
-              if (meta.inProgress) return meta.inProgress
-              break
+            case 'join': return meta.inProgress
             /* istanbul ignore next */
             default: _unreachable(sp)
           }
@@ -70,7 +68,7 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
         meta.updates = []
 
         meta.inProgress = $.merge(
-          spec.warnAfter &&
+          spec.warnAfter && // todo: improve
           $.timer(spec.warnAfter)
             .pipe(tap(() => meta.warnedAt = this._ms()), filter(() => false)) || $.empty(),
           $.defer(() => action(ps))

@@ -8,16 +8,29 @@ import { RxifireError } from '../utils/errors'
 type IO = AsActionsIO<{
   prom: [number, string, null],
   obs: [string, string[], null],
+  obs2: [string, string[], null],
+  obs3: [string, string[], null],
   never: [null, never, null]
 }>
 
 const acts: Actions<IO> = {
   prom: (n) => Promise.resolve(`${n}`),
   obs: (s) => $.of(s.split('')).delay(1),
+  obs2: (s) => $.of(s.split('')).delay(2),
+  obs3: (s) => $.of(s.split('')).delay(3),
   never: () => $.never()
 }
 
 const spec: ActionsSpec<IO> = {
+  prom: {
+    inProgressRefire: 'ignore'
+  },
+  obs2: {
+    inProgressRefire: 'join'
+  },
+  obs3: {
+    inProgressRefire: 'stop-then-refire'
+  },
   never: {
     warnAfter: 4, timeout: 10
   }
@@ -46,6 +59,18 @@ test('actions - as throws', () => {
   expect(() => ctr.as('prom', 'success')).toThrowError(RxifireError)
   expect(() => ctr.as('never', 'error')).toThrowError(RxifireError)
 })
+
+test('actions - simple fire', () =>
+  ctr.fire('prom')(2)
+    .do(x => expect(x).toBe('2'))
+    .do(() => {
+      const m = ctr.as('prom', 'success')
+      expect(m.value).toBe('2')
+      expect(m.doneAt - m.firedAt).toBeGreaterThanOrEqual(0)
+      expect(Date.now() - m.doneAt)
+        .toBeLessThanOrEqual(2)
+    })
+    .toPromise())
 
 test('actions - error', () =>
   ctr.fire('never')()
@@ -78,6 +103,13 @@ test('actions - cancel', () =>
     .then(v => expect(v).toBe('EMPTY'))
 )
 
+test('actions - double fire throws by default', () =>
+  ctr.fire('obs')('abc')
+    .merge(ctr.fire('obs')('def'))
+    .toPromise()
+    .catch(err => expect(err).toBeInstanceOf(RxifireError))
+)
+
 test('actions - simple fire', () =>
   ctr.fire('prom')(2)
     .do(x => expect(x).toBe('2'))
@@ -89,3 +121,45 @@ test('actions - simple fire', () =>
         .toBeLessThanOrEqual(2)
     })
     .toPromise())
+
+test('actions - ignore', () =>
+  ctr.fire('prom')(2)
+    .zip(ctr.fire('prom')(2).defaultIfEmpty('EMPTY'))
+    .do(([n, e]) => {
+      expect(n).toBe('2')
+      expect(e).toBe('EMPTY')
+    })
+    .toPromise()
+)
+
+test('actions - join', () =>
+  ctr.fire('obs2')('abc')
+    .zip(ctr.fire('obs2')('abc'))
+    .do(([a1, a2]) => expect(a1).toEqual(a2))
+    .toPromise()
+)
+
+test('actions - stop-then-refire', () =>
+  ctr.fire('obs3')('abc')
+    .defaultIfEmpty('EMPTY')
+    .zip(ctr.fire('obs3')('abc'))
+    .do(([a1, a2]) => {
+      expect(a1).toBe('EMPTY')
+      expect(a2).toEqual(['a', 'b', 'c'])
+    })
+    .toPromise()
+)
+
+test('actions - reset', () => {
+  ctr = new ActionsF$(acts, spec, () => Date.now())
+  expect(ctr.meta('obs').status === 'idle').toBe(true)
+  ctr.fire('obs')('').toPromise()
+  expect(ctr.meta('obs').status === 'in-progress').toBe(true)
+  ctr.reset()
+  const m = ctr.meta('obs')
+  const ks = Object.keys(m)
+    .filter(k => (m as any)[k] !== undefined)
+  expect(ks.length).toBe(1)
+  expect(ks[0]).toBe('status')
+  expect(ctr.meta('obs').status === 'idle').toBe(true)
+})
