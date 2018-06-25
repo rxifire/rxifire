@@ -2,6 +2,7 @@ import 'rxjs-compat'
 import { Observable as $ } from 'rxjs/Observable'
 
 import { ActionsF$, AsActionsIO, ActionsSpec, Actions } from './index'
+import { RxifireError } from '../utils/errors'
 
 // todo: this will be modified once variadic params landed in TS
 type IO = AsActionsIO<{
@@ -35,11 +36,19 @@ test('actions - meta start', () => {
   const m = ctr.meta('obs')
   const ks = Object.keys(m)
     .filter(k => m[k] !== undefined)
+  console.log(ks)
   expect(ks.length).toBe(1)
   expect(ks[0]).toBe('status')
 })
 
-test('actions - simple', () => {
+test('actions - as throws', () => {
+  expect(ctr.as('never', 'idle')).toBeTruthy()
+  expect(() => ctr.as('obs', 'in-progress')).toThrowError(RxifireError)
+  expect(() => ctr.as('prom', 'success')).toThrowError(RxifireError)
+  expect(() => ctr.as('never', 'error')).toThrowError(RxifireError)
+})
+
+test('actions - simple fire', () => {
   ctr.fire('prom')(2)
     .do(x => expect(x).toBe('2'))
     .toPromise()

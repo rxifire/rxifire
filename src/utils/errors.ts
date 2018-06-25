@@ -1,6 +1,10 @@
+// todo make sense out of it
 export enum ErrorCode {
   SIGNAL_TO_VOID = 4000,
-  FIRE_IN_PROGRESS = 4100
+  INCORRECT_CAST = 4010,
+  FIRE_IN_PROGRESS = 4100,
+
+  UNREACHABLE = 5000
 }
 
 export type EnumMap = {
@@ -9,7 +13,10 @@ export type EnumMap = {
 
 const StatusToMessage: EnumMap = {
   4000: 'If a tree falls in the forest and no one is there, does it still make a sound.',
-  4100: 'If you chase two rabbits, you will catch neither one.'
+  4010: 'Learn to see things as they really are, not as we imagine they are.',
+  4100: 'If you chase two rabbits, you will catch neither one.',
+
+  5000: 'Everyone is a moon, and has a dark side which he never shows to anybody.'
 }
 
 export class RxifireError extends Error {
@@ -34,6 +41,10 @@ export class RxifireError extends Error {
   }
 }
 
-export const _throw = (status: ErrorCode, context?: object) => {
+export const _throw = (status: ErrorCode, context?: object): never => {
   throw new RxifireError(status, context)
+}
+
+export const _unreachable = (x: never): never => {
+  throw new RxifireError(ErrorCode.UNREACHABLE)
 }

@@ -5,8 +5,8 @@ export type Status = 'idle' | 'in-progress' | 'success' | 'error' // todo: consi
 
 export type InProgressRefire =
   'not-allowed' // throw - default
-  | 'restart' // like .switch
-  | 'join' // like .share - will get the result
+  | 'stop-then-refire' // like .switch - previous cancelled and new fired
+  | 'join' // .share - will get the result
   | 'ignore' // $.empty()
 
 export type Actions<T extends AsActionsIO<any>> = {

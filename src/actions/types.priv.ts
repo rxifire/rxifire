@@ -1,4 +1,6 @@
 import { Observable } from 'rxjs/Observable'
+import { Subject } from 'rxjs/Subject'
+import { Subscription } from 'rxjs/Subscription'
 
 import { AsActionsIO, ActionsSpec, Status } from './types'
 import { DateMs } from '../'
@@ -44,8 +46,9 @@ export interface InProgress<Res, Upd> extends Fired {
   cache?: Cache<Res>
 }
 
-export interface Success<Res, Multi extends boolean = false> extends Fired, Done {
+export interface Success<Res> extends Fired, Done {
   status: 'success',
+  result: Res
   // result: Multi extends false ? Res : WithTime<Res>
 }
 // type InProgressMulti = never // todo
@@ -55,9 +58,9 @@ export interface Error extends Fired, Done {
   error: any
 }
 
-export type StatusToState<S extends Status> =
-  S extends 'in-progress' ? InProgress<any, any> :
-  S extends 'success' ? Success<any> :
+export type StatusToState<S extends Status, Res, Upd> =
+  S extends 'in-progress' ? InProgress<Res, Upd> :
+  S extends 'success' ? Success<Res> :
   S extends 'error' ? Error
   : never // 'idle'
 
@@ -70,10 +73,19 @@ export interface Meta<Res, Upd> {
   doneAt?: DateMs
   updates?: Upd[]
   error?: any
-  success?: Res
-  cache?: Cache<Res>
+  value?: Res
+  // cache?: Cache<Res>
+  // logs: Subject<any> todo: this or make status
+}
+
+export interface MetaIn<Res, Upd> extends Meta<Res, Upd> {
+  [k: string]: any
+
+  inProgress?: Observable<Res>
+  // until: Subject<any>
+  // sub?: Subscription
 }
 
 export type Internal<A extends AsActionsIO<any>> = {
-  [K in keyof A]: [ActionsIn<A>[K], Meta<A[1], A[2]>, ActionsSpec<A>[K]]
+  [K in keyof A]: [ActionsIn<A>[K], MetaIn<A[1], A[2]>, ActionsSpec<A>[K]]
 }
