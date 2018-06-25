@@ -16,11 +16,11 @@ export * from './types'
 
 const $ = Observable
 
-type Internal<A extends T.ActionsIO> = {
+type Internal<A extends T.AsActionsIO<any>> = {
   [K in keyof A]: [P.ActionsIn<A>[K], T.ActionsSpec<A>[K]]
 }
 
-export class ActionsF$<A extends T.ActionsIO> {
+export class ActionsF$<A extends T.AsActionsIO<any>> {
   private _acts: Internal<A> = {} as Internal<A>
   private _cache: { [K in keyof A]?: A[K][1] } = {}
 

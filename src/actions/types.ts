@@ -38,13 +38,13 @@ export type StatusToState<S extends Status> =
   S extends 'error' ? Error<any>
   : never // 'idle'
 
-export type Actions<T extends ActionsIO> = {
+export type Actions<T extends AsActionsIO<any>> = {
   [K in keyof T]: P.Action<T[K]>
 }
 
-export interface ActionsIO {
-  [K: string]: P.ActionIO
-}
+export type AsActionsIO<T extends {}> = T extends {
+  [k: string]: P.ActionIO
+} ? T : never
 
 type ActionSpec<T extends P.ActionIO> = {
   warnAfter: Milliseconds // action takes longer than expected
@@ -57,6 +57,6 @@ type ActionSpec<T extends P.ActionIO> = {
   history?: boolean | number // no history for now
 }
 
-export type ActionsSpec<T extends ActionsIO> = {
+export type ActionsSpec<T extends AsActionsIO<any>> = {
   [K in keyof T]?: Partial<ActionSpec<T[K]>>
 }

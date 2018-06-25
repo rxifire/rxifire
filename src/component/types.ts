@@ -1,8 +1,8 @@
 import { Observable } from 'rxjs'
 import * as P from './types.priv'
-import { ActionsIO, Actions } from '../actions/types'
+import { AsActionsIO, Actions } from '../actions/types'
 
-export type ComponentSpec<State, Signals extends {}, Act extends ActionsIO, Behaviors extends {}> = {
+export type ComponentSpec<State, Signals extends {}, Act extends AsActionsIO<any>, Behaviors extends {}> = {
   defaultBehaviors?: Required<Behaviors>
   // todo: allow setting what actions should be permitted in view & state - priority low
 

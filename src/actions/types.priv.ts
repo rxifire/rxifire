@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs/Observable'
 
-import { ActionsIO } from './types'
+import { AsActionsIO } from './types'
 
 export type ActionIO<Params = any, Result = any, Update = any> =
   [Params, Result, Update]
@@ -21,6 +21,6 @@ export type ActionIn<T extends ActionIO> =
   // todo: if needed { action: SimpleObs<T[0], T[1]>, updates: Observable<T[3]> } |
   ((p: T[0]) => Observable<{ update: T[2] } | { result: T[1] }>)
 
-export type ActionsIn<T extends ActionsIO> = {
+export type ActionsIn<T extends AsActionsIO<any>> = {
   [K in keyof T]: ActionIn<T[K]>
 }
