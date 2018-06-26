@@ -22,7 +22,7 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
   private static readonly _empty = {}
   public readonly keys: (keyof A)[]
   private _acts: P.Internal<A> = {} as P.Internal<A>
-  private _cache: { [K in keyof A]?: A[K][1] } = {}
+  // private _cache: { [K in keyof A]?: A[K][1] } = {}
   private _ms: () => DateMs
   private _until = new Subject<keyof A>()
 
@@ -43,12 +43,10 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
       _throw(ErrorCode.INCORRECT_CAST)
       : this._acts[k][1] as P.StatusToState<S, A[K][1], A[K][2]>
 
-  fire: <K extends keyof A>(k: K) => (A[K][0] extends (never | null | undefined) ?
-    () => Observable<A[K][1]> : (p: A[K][0]) => Observable<A[K][1]>)
+  fire: <K extends keyof A>(k: K) => P.Fire<A, K>
     = <K extends keyof A> (k: K) => ((ps: A[K][1]) =>
       $.defer(() => {
         // need to defer as the action may be subscribed later - todo: detect such case and warn / add flag
-
         const [action, meta, spec] = this._acts[k]
         if (meta.status === 'in-progress') {
           const sp = spec.inProgressRefire || 'not-allowed'
@@ -73,13 +71,16 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
             .pipe(tap(() => meta.warnedAt = this._ms()), filter(() => false)) || $.empty(),
           $.defer(() => action(ps))
             .pipe(
-              // todo: improve
-              (spec && spec.timeout && timeout(spec.timeout)) || (x => x),
+              (spec.timeout && timeout(spec.timeout)) || (x => x),
               tap(
-                v => { // todo: updates
-                  meta.status = 'success'
-                  meta.doneAt = this._ms()
-                  meta.value = v
+                (v: any) => { // todo: improve
+                  if (v.update) {
+                    meta.updates!.push(v.update)
+                  } else {
+                    meta.status = 'success'
+                    meta.doneAt = this._ms()
+                    meta.value = v
+                  }
                 },
                 e => {
                   meta.status = 'error'

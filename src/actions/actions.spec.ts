@@ -11,6 +11,8 @@ type IO = AsActionsIO<{
   obs2: [string, string[], null],
   obs3: [string, string[], null],
   never: [null, never, null]
+
+  updates: [[string, number], string, number]
 }>
 
 const acts: Actions<IO> = {
@@ -18,7 +20,14 @@ const acts: Actions<IO> = {
   obs: (s) => $.of(s.split('')).delay(1),
   obs2: (s) => $.of(s.split('')).delay(2),
   obs3: (s) => $.of(s.split('')).delay(3),
-  never: () => $.never()
+  never: () => $.never(),
+
+  updates: ([w, d]) =>
+    $.from(w.split(''))
+      .concatMap((l, i) =>
+        $.timer(i * d)
+          .mapTo({ update: i })
+          .merge(i === w.length - 1 ? $.of({ result: w }) : $.empty()))
 }
 
 const spec: ActionsSpec<IO> = {
@@ -163,3 +172,13 @@ test('actions - reset', () => {
   expect(ks[0]).toBe('status')
   expect(ctr.meta('obs').status === 'idle').toBe(true)
 })
+
+test('actions -updates', () =>
+  ctr.fire('updates')(['abcdefghij', 1])
+    .take(3)
+    .toArray()
+    // todo: casting to any is not ideal - probably better to ask for two separate streams
+    // and run updates automatically
+    .do(rs => expect(rs.map(r => (r as any).update)).toEqual([0, 1, 2]))
+    .toPromise()
+)

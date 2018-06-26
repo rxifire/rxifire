@@ -10,7 +10,7 @@ export type InProgressRefire =
   | 'ignore' // $.empty()
 
 export type Actions<T extends AsActionsIO<any>> = {
-  [K in keyof T]: P.Action<T[K]>
+  [K in keyof T]: P.ActionFn<T[K]>
 }
 
 type ActionSpec<T extends P.ActionIO> = {
