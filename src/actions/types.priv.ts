@@ -1,8 +1,8 @@
 import { Observable } from 'rxjs/Observable'
 import { Subject } from 'rxjs/Subject'
 
-import { AsActionsIO, ActionsSpec, Status } from './types'
-import { DateMs } from '../'
+import { AsActionsIO, ActionsSpec, Status, StreamType, StatusEvent, InProgressRefire } from './types'
+import { DateMs, Milliseconds, TypeError } from '../'
 
 export type SecretMarker = { __RXIFIRE__: 'RXIFIRE' }
 
@@ -43,6 +43,24 @@ export type Fire<A extends AsActionsIO<any>, K extends keyof A> =
   : (A[K][2] extends (never | null | undefined) ?
     (ps: A[K][0]) => Observable<A[K][1]> : (ps: A[K][0]) => WithUpdates<A[K][1], A[K][2]>)
 
+export type ActionSpec<T extends ActionIO> = {
+  warnAfter: Milliseconds // action takes longer than expected
+  timeout: Milliseconds  // .timeout(ms)
+  cacheFor: Milliseconds // caches successful result for that long
+  inProgressRefire: InProgressRefire
+
+  // todo - consider
+  // persistentCache?: boolean // false - would require passing persistence mechanism
+  // stats?: boolean // keep them automatically
+  // history?: boolean | number // no history for now
+  // onlyThisInProgress?: boolean // block all others, rather tricky to get right all cases
+}
+
+// IMPORTANT: defines internals of implementation
+export type Internal<A extends AsActionsIO<any>> = {
+  [K in keyof A]: [ActionsIn<A>[K], Meta<A[1], A[2]>, MetaIn<A[1], A[2]>, NonNullable<ActionsSpec<A>[K]>]
+}
+
 export interface Fired {
   status: 'success' | 'error' | 'in-progress'
   firedAt: DateMs
@@ -77,6 +95,13 @@ export type StatusToState<S extends Status, Res, Upd> =
   S extends 'error' ? Error
   : never // 'idle'
 
+export type StreamToUpdates<S extends StreamType, Res, Upd, K> =
+  S extends 'status' ? Observable<StatusEvent<Res>> :
+  S extends 'warn' ? Observable<DateMs> :
+  S extends 'updates' ? (Upd extends (never | null | undefined) ?
+    TypeError<'No updates defined for this action.', { action: K, updatesType: Upd }>
+    : Observable<InProgress<Upd>>) : TypeError<'Internal Error'>
+
 export interface Cache<Res> { value: Res, set: DateMs, expired?: DateMs }
 
 export interface Meta<Res, Upd> {
@@ -93,8 +118,4 @@ export interface MetaIn<Res, Upd> {
   _inProgress?: Observable<Res> | ReturnType<WithUpdatesFn<any, Res, Upd>>
   _status: Subject<Status>
   _updates: Subject<InProgress<Upd>>
-}
-
-export type Internal<A extends AsActionsIO<any>> = {
-  [K in keyof A]: [ActionsIn<A>[K], Meta<A[1], A[2]>, MetaIn<A[1], A[2]>, NonNullable<ActionsSpec<A>[K]>]
 }

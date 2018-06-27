@@ -37,6 +37,9 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
       }, {} as P.Internal<A>)
   }
 
+  $ = <K extends keyof A, T extends T.StreamType> (k: K, t?: T) => (!t || t === 'status' ?
+    this._acts[k][2]._status as Observable<any> : this._acts[k][2]._updates) as P.StreamToUpdates<T, A[K][1], A[K][2], K>
+
   is = <K extends keyof A> (k: K, s: T.Status): boolean => this._acts[k][1].status === s
   meta = <K extends keyof A> (k: K) => this._acts[k][1] as Readonly<P.Meta<A[K][1], A[K][2]>>
   as = <K extends keyof A, S extends T.Status> (k: K, s: S) =>
@@ -44,7 +47,7 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
       _throw(ErrorCode.INCORRECT_CAST)
       : this._acts[k][1] as P.StatusToState<S, A[K][1], A[K][2]>
 
-  fire: <K extends keyof A>(k: K) => P.Fire<A, K>
+  fire: <K extends keyof A> (k: K) => P.Fire<A, K>
     = <K extends keyof A> (k: K) => ((ps: A[K][1]) =>
       $.defer(() => {
         // need to defer as the action may be subscribed later - todo: detect such case and warn / add flag
