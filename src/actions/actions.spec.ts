@@ -1,8 +1,8 @@
 import 'rxjs-compat'
 import { Observable as $ } from 'rxjs/Observable'
 
-import { ActionsF$, AsActionsIO, ActionsSpec, Actions } from './index'
-import { RxifireError } from '../utils/errors'
+import { ActionsF$, AsActionsIO, ActionsSpec, Actions } from '.'
+import { RxifireError } from '../utils'
 
 // todo: this will be modified once variadic params landed in TS
 type IO = AsActionsIO<{
@@ -173,7 +173,7 @@ test('actions - simple fire', () =>
       expect(m.value).toBe('2')
       expect(m.doneAt - m.firedAt).toBeGreaterThanOrEqual(0)
       expect(Date.now() - m.doneAt) // this type of test should be probably removed
-        .toBeLessThanOrEqual(3)
+        .toBeLessThanOrEqual(5)
     })
     .toPromise())
 

@@ -32,8 +32,7 @@ type Spec = F$.ComponentSpec<State, Signals, ActionsSpc, Behaviors>
 export const effectsC: Actions<ActionsSpc> = {
   asyncA: (n) => Observable.of(`${n}`),
   asyncB: (s) => Observable.of(s.split('')),
-  asyncUp: (s) => Observable.of(s.split('')).map(x => ({ result: x })).delay(2000)
-    .merge(Observable.timer(0, 2000).map(x => ({ update: x })))
+  asyncUp: (s) => Observable.of(s.split('')).delay(2000)
 }
 
 export const spec: Spec = {

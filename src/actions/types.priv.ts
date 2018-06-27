@@ -1,11 +1,10 @@
 import { Observable } from 'rxjs/Observable'
 import { Subject } from 'rxjs/Subject'
 
-import { AsActionsIO, ActionsSpec, Status, StreamType, StatusEvent, InProgressRefire } from './types'
-import { DateMs, Milliseconds } from '../'
-import { InternalError } from '../utils'
+import { InternalError, Void, DateMs, Milliseconds } from '../utils'
 
-type Void = void | null | undefined | never
+import { AsActionsIO, ActionsSpec, Status, StreamType, StatusEvent, InProgressRefire } from './types'
+
 type AsUniqueToken<T extends string> = { __RXIFIRE__: T }
 export type NoOp = AsUniqueToken<'noop'>
 export type StartToken = AsUniqueToken<'start'>

@@ -1,4 +1,4 @@
-import { BehaviorsF$, SignalsF$ } from '../utils/sig-beh'
+import { BehaviorsF$, SignalsF$ } from '../streams'
 import { ComponentSpec } from './types'
 import { Actions } from '../actions/types'
 
