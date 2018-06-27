@@ -20,6 +20,8 @@ export type SimpleObs<Params, Result> = (p: Params) => Observable<Result>
 
 // this is not 100% ideal as forces as shape of the stream
 export type WithUpdatesFn<P, R, U> =
+  P extends Void ?
+  ((onUpdate: (u: U) => void) => Observable<R>) :
   ((p: P, onUpdate: (u: U) => void) => Observable<R>)
 // todo: if needed - priority low
 // | ((p: P, onUpdate: (update: U) => void) => Observable<R>)
@@ -30,11 +32,11 @@ export type WithUpdates<R, U> = ReturnType<WithUpdatesFn<any, R, U>>
 export type Active<R, U> = Observable<R> | WithUpdates<R, U>
 
 export type ActionFn<T extends ActionIO> =
-  T[2] extends null ?
+  T[2] extends Void ?
   (Simple<T[0], T[1]>) : WithUpdatesFn<T[0], T[1], T[2]>
 
 export type ActionFnIn<T extends ActionIO> =
-  T[2] extends null ?
+  T[2] extends Void ?
   (SimpleObs<T[0], T[1]>) : WithUpdatesFn<T[0], T[1], T[2]>
 
 export type ActionsIn<T extends AsActionsIO<any>> = {
@@ -42,10 +44,10 @@ export type ActionsIn<T extends AsActionsIO<any>> = {
 }
 
 export type Fire<A extends AsActionsIO<any>, K extends keyof A> =
-  A[K][0] extends (never | null | undefined) ?
-  (A[K][2] extends (never | null | undefined) ?
+  A[K][0] extends Void ?
+  (A[K][2] extends Void ?
     () => Observable<A[K][1]> : () => WithUpdates<A[K][1], A[K][2]>)
-  : (A[K][2] extends (never | null | undefined) ?
+  : (A[K][2] extends Void ?
     (ps: A[K][0]) => Observable<A[K][1]> : (ps: A[K][0]) => WithUpdates<A[K][1], A[K][2]>)
 
 export type ActionSpec<T extends ActionIO> = {

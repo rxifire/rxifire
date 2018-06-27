@@ -86,11 +86,15 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
         }
         metaIn._status.next(this._acts[k][1] as any)
 
+        const def = (ps !== undefined ?
+          $.defer(() => (action as any)(ps, this._onUpdate(k))) :
+          $.defer(() => (action as any)(this._onUpdate(k)))) as Observable<A[K][1]>
+
         metaIn._inProgress = $.merge(
           spec.warnAfter && // todo: improve
           $.timer(spec.warnAfter)
             .pipe(tap(this._onWarn(k)), filter(() => false)) || $.empty(),
-          $.defer(() => ((action as any)(ps, this._onUpdate(k)) as Observable<A[K][1]>))
+          def
             .pipe(
               (spec.timeout && timeout(spec.timeout)) || (x => x),
               take(1),
