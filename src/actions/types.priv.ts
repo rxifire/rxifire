@@ -81,7 +81,7 @@ export interface Done {
 }
 
 export interface Idle {
-  type: 'idle'
+  status: 'idle'
 }
 
 export type InProgress<Params, Upd, Type> = Fired<Params> & {

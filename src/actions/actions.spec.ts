@@ -12,6 +12,8 @@ type IO = AsActionsIO<{
   obs3: [string, string[], null],
   never: [never, never, void]
 
+  err: [string, never, null],
+
   ups: [[string, number], string, number]
 }>
 
@@ -21,6 +23,8 @@ const acts: Actions<IO> = {
   obs2: (s) => $.of(s.split('')).delay(2),
   obs3: (s) => $.of(s.split('')).delay(3),
   never: () => $.never(),
+
+  err: (s) => $.timer(3).mergeMapTo($.throw(s)),
 
   ups: ([w, d], onUpdate) =>
     $.from(w.split(''))
@@ -82,10 +86,37 @@ test('actions - simple fire', () =>
     })
     .toPromise())
 
-test('actions - error', () =>
+test('actions - timeout', () =>
   ctr.fire('never')()
     .toPromise()
     .catch(err => expect(err.name).toBe('TimeoutError'))
+)
+
+test('actions - error', () =>
+  ctr.$('err')()
+    .merge(ctr.fire('err')('ERR')
+      .catch(err => {
+        expect(err).toBe('ERR')
+        return $.empty()
+      }))
+    .take(2)
+    .toArray()
+    .do(xs => expect(xs.map(x => x.status)).toEqual(['in-progress', 'error']))
+    .toPromise()
+)
+
+test('actions - default stream status', () =>
+  $.zip(
+    ctr.$('err')().take(2).toArray(),
+    ctr.$('err')('status').take(2).toArray()
+  )
+    .merge(ctr.fire('err')('ERR')
+      .catch(err => {
+        expect(err).toBe('ERR')
+        return $.empty()
+      }))
+    .do(xs => expect(xs[0]).toEqual(xs[1]))
+    .toPromise()
 )
 
 test('actions - warn - pull', () =>
@@ -94,6 +125,20 @@ test('actions - warn - pull', () =>
       $.timer(5)
         .do(() => expect(Date.now() - ctr.as('never', 'in-progress').warnedAt!)
           .toBeLessThanOrEqual(3))
+    )
+    .toPromise()
+    .catch(err => {
+      expect(err.name).toBe('TimeoutError')
+    })
+)
+
+test('actions - warn', () =>
+  ctr.fire('never')()
+    .merge(
+      ctr.$('never')('warn')
+        .take(1)
+        .do(x => expect(Date.now() - x.warnedAt)
+          .toBeLessThanOrEqual(1))
     )
     .toPromise()
     .catch(err => {
@@ -127,8 +172,8 @@ test('actions - simple fire', () =>
       const m = ctr.as('prom', 'success')
       expect(m.value).toBe('2')
       expect(m.doneAt - m.firedAt).toBeGreaterThanOrEqual(0)
-      expect(Date.now() - m.doneAt)
-        .toBeLessThanOrEqual(2)
+      expect(Date.now() - m.doneAt) // this type of test should be probably removed
+        .toBeLessThanOrEqual(3)
     })
     .toPromise())
 

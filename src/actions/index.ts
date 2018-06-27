@@ -43,11 +43,11 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
 
   $ = <K extends keyof A> (k: K): (<T extends P.AvailableStreams<A[K][2]>>(t?: T) =>
     P.StreamToUpdates<T, A[K][0], A[K][1], A[K][2]>) => (t) => {
-      const _t: T.StreamType = (t) as T.StreamType
+      const _t = t as T.StreamType || 'status'
       switch (_t) {
-        case 'updates': return this._acts[k][2]._updates as any
+        case 'updates': return this._acts[k][2]._updates
         case 'warn': return this._acts[k][2]._warn
-        case 'status': return this._acts[k][2]._status
+        case 'status': return this._acts[k][2]._status as any
         default:
           /* istanbul ignore next */
           return _unreachable(_t)
@@ -77,7 +77,10 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
             default: _unreachable(sp)
           }
         }
-        this._resetSingle(k)
+
+        if (meta.status !== 'idle') {
+          this._resetSingle(k)
+        }
 
         this._acts[k][1] = {
           status: 'in-progress',
@@ -91,9 +94,6 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
           $.defer(() => (action as any)(this._onUpdate(k)))) as Observable<A[K][1]>
 
         metaIn._inProgress = $.merge(
-          spec.warnAfter && // todo: improve
-          $.timer(spec.warnAfter)
-            .pipe(tap(this._onWarn(k)), filter(() => false)) || $.empty(),
           def
             .pipe(
               (spec.timeout && timeout(spec.timeout)) || (x => x),
@@ -109,8 +109,12 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
               ),
               finalize(() => this.is(k, 'in-progress') && this._resetSingle(k)),
               share()
-            )
+            ),
+          spec.warnAfter && // todo: improve
+          $.timer(spec.warnAfter)
+            .pipe(tap(this._onWarn(k)), filter(() => false)) || $.empty()
         )
+
         return metaIn._inProgress
       })) as any // todo: check if could be improved - required to allow 0 params
 
@@ -126,13 +130,13 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
   }
 
   private _toDone = <K extends keyof A> (k: K, st: 'success' | 'error') => (v?: any) => {
-    const n = Object.assign({}, this._acts[k][1], {
-      status: st, doneAt: this._ms(), value: v
-    })
-    if (st === 'error') {
-      n.value = undefined
-      n.error = v
-    }
+    const n = Object.assign(
+      st === 'error' ? { error: v } : { value: v },
+      this._acts[k][1],
+      {
+        status: st, doneAt: this._ms(), value: v
+      })
+
     this._acts[k][1] = n
     this._acts[k][2]._status.next(n as any)
   }
