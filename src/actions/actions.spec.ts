@@ -10,15 +10,10 @@ type IO = AsActionsIO<{
   obs: [string, string[], null],
   obs2: [string, string[], null],
   obs3: [string, string[], null],
-  never: [never, never, null]
+  never: [never, never]
 
   updates: [[string, number], string, number]
 }>
-
-// const f: (this: void) => void = () => null
-// f()
-const e: (...abc: void[]) => void = () => null
-e()
 
 const acts: Actions<IO> = {
   prom: (n) => Promise.resolve(`${n}`),
@@ -128,6 +123,7 @@ test('actions - simple fire', () =>
   ctr.fire('prom')(2)
     .do(x => expect(x).toBe('2'))
     .do(() => {
+      ctr.$('obs3', 'updates')
       const m = ctr.as('prom', 'success')
       expect(m.value).toBe('2')
       expect(m.doneAt - m.firedAt).toBeGreaterThanOrEqual(0)

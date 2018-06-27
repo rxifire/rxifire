@@ -11,7 +11,7 @@ export type InProgressRefire =
 
 export type StreamType = 'status' | 'updates' | 'warn'
 
-export type StatusEvent<Res> = P.Idle | P.InProgress<P.SecretMarker> | P.Success<Res> | Error
+export type StatusEvent<Params, Res> = P.Idle | P.InProgress<Params, any, P.StartToken> | P.Success<Params, Res> | P.Error<Params>
 
 export type Actions<T extends AsActionsIO<any>> = {
   [K in keyof T]: P.ActionFn<T[K]>
@@ -21,6 +21,10 @@ export type ActionsSpec<T extends AsActionsIO<any>> = {
   [K in keyof T]?: Partial<P.ActionSpec<T[K]>>
 }
 
+type ToError<T extends {}> = {
+  [P in keyof T]: T[P] extends P.ActionIO ? 'OK' : T[P]
+}
+
 export type AsActionsIO<T extends {}> = T extends {
   [k: string]: P.ActionIO
-} ? T : TypeError<'ActionsIO must be of form [Params, Result, Update | null]. [todo more info]'>
+} ? T : TypeError<'ActionsIO must be of form [Params, Result, Update | null]. [todo more info]', ToError<T>>
