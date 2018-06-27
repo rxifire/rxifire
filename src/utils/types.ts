@@ -18,6 +18,9 @@ export type AsCallbacks<T extends {}> = {
   [k in keyof T]: T[k] extends null ? () => void : (k: T[k]) => void
 }
 
+export type FnParams<P, R> =
+  P extends (null | undefined | void | never) ? () => R : (p: P) => R
+
 // todo: make them pseudo opaque
 export type Seconds = number
 export type Milliseconds = number

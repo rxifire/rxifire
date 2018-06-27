@@ -10,10 +10,15 @@ type IO = AsActionsIO<{
   obs: [string, string[], null],
   obs2: [string, string[], null],
   obs3: [string, string[], null],
-  never: [null, never, null]
+  never: [never, never, null]
 
   updates: [[string, number], string, number]
 }>
+
+// const f: (this: void) => void = () => null
+// f()
+const e: (...abc: void[]) => void = () => null
+e()
 
 const acts: Actions<IO> = {
   prom: (n) => Promise.resolve(`${n}`),
@@ -34,9 +39,9 @@ const spec: ActionsSpec<IO> = {
   prom: {
     inProgressRefire: 'ignore'
   },
-  obs2: {
-    inProgressRefire: 'join'
-  },
+  // obs2: {
+  //   inProgressRefire: 'join'
+  // },
   obs3: {
     inProgressRefire: 'stop-then-refire'
   },
@@ -141,12 +146,12 @@ test('actions - ignore', () =>
     .toPromise()
 )
 
-test('actions - join', () =>
-  ctr.fire('obs2')('abc')
-    .zip(ctr.fire('obs2')('abc'))
-    .do(([a1, a2]) => expect(a1).toEqual(a2))
-    .toPromise()
-)
+// test('actions - join', () =>
+//   ctr.fire('obs2')('abc')
+//     .zip(ctr.fire('obs2')('abc'))
+//     .do(([a1, a2]) => expect(a1).toEqual(a2))
+//     .toPromise()
+// )
 
 test('actions - stop-then-refire', () =>
   ctr.fire('obs3')('abc')

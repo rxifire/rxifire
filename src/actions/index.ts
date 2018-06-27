@@ -54,7 +54,7 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
             case 'not-allowed': return _throw(ErrorCode.FIRE_IN_PROGRESS)
             case 'ignore': return $.empty()
             case 'stop-then-refire': break
-            case 'join': return meta.inProgress
+            // case 'join': return meta.inProgress
             /* istanbul ignore next */
             default: _unreachable(sp)
           }
