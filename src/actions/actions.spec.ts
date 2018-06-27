@@ -12,7 +12,7 @@ type IO = AsActionsIO<{
   obs3: [string, string[], null],
   never: [never, never, void]
 
-  updates: [[string, number], string, number]
+  ups: [[string, number], string, number]
 }>
 
 const acts: Actions<IO> = {
@@ -22,12 +22,13 @@ const acts: Actions<IO> = {
   obs3: (s) => $.of(s.split('')).delay(3),
   never: () => $.never(),
 
-  updates: ([w, d]) =>
+  ups: ([w, d], onUpdate) =>
     $.from(w.split(''))
       .concatMap((l, i) =>
         $.timer(i * d)
-          .mapTo({ update: i })
-          .merge(i === w.length - 1 ? $.of({ result: w }) : $.empty()))
+          .do(() => onUpdate(i))
+          .ignoreElements()
+          .merge(i === w.length - 1 ? $.of(w) : $.empty()))
 }
 
 const spec: ActionsSpec<IO> = {
@@ -87,7 +88,7 @@ test('actions - error', () =>
     .catch(err => expect(err.name).toBe('TimeoutError'))
 )
 
-test('actions - warn', () =>
+test('actions - warn - pull', () =>
   ctr.fire('never')()
     .merge(
       $.timer(5)
@@ -135,9 +136,6 @@ test('actions - ignore', () =>
   ctr.fire('prom')(2)
     .zip(ctr.fire('prom')(2).defaultIfEmpty('EMPTY'))
     .do(([n, e]) => {
-      ctr.$('obs2')('status')
-      ctr.$('obs')('status')
-      ctr.$('updates')('updates')
       expect(n).toBe('2')
       expect(e).toBe('EMPTY')
     })
@@ -176,12 +174,11 @@ test('actions - reset', () => {
   expect(ctr.meta('obs').status === 'idle').toBe(true)
 })
 
-test('actions -updates', () =>
-  ctr.fire('updates')(['abcdefghij', 1])
+test('actions - updates', () =>
+  ctr.$('ups')('updates')
     .take(3)
     .toArray()
-    // todo: casting to any is not ideal - probably better to ask for two separate streams
-    // and run updates automatically
-    .do(rs => expect(rs.map(r => (r as any).update)).toEqual([0, 1, 2]))
+    .do(rs => expect(rs.map(r => r.update)).toEqual([0, 1, 2]))
+    .merge(ctr.fire('ups')(['abcdefghij', 1]))
     .toPromise()
 )

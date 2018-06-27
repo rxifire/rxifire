@@ -3,6 +3,7 @@ import { Subject } from 'rxjs/Subject'
 
 import { AsActionsIO, ActionsSpec, Status, StreamType, StatusEvent, InProgressRefire } from './types'
 import { DateMs, Milliseconds } from '../'
+import { InternalError } from '../utils'
 
 type Void = void | null | undefined | never
 type AsUniqueToken<T extends string> = { __RXIFIRE__: T }
@@ -19,7 +20,7 @@ export type SimpleObs<Params, Result> = (p: Params) => Observable<Result>
 
 // this is not 100% ideal as forces as shape of the stream
 export type WithUpdatesFn<P, R, U> =
-  ((p: P) => Observable<{ update: U } | { result: R }>)
+  ((p: P, onUpdate: (u: U) => void) => Observable<R>)
 // todo: if needed - priority low
 // | ((p: P, onUpdate: (update: U) => void) => Observable<R>)
 // |{ action: Simple<T[0], T[1]>, updates: Observable<T[3]> }
@@ -85,7 +86,7 @@ export type InProgress<Params, Upd, Type> = Fired<Params> & {
   status: 'in-progress'
 } & (Type extends StartToken ? {} :
   (Type extends WarnToken ? { warnedAt: DateMs } : { warnedAt?: DateMs }) &
-  (Upd extends (Void) ? {} : { updates: Upd[] })
+  (Upd extends (Void) ? {} : { update: Upd, updatedAt: DateMs })
   )
 
 export interface Success<Params, Res> extends Fired<Params>, Done {
@@ -104,22 +105,24 @@ export type StatusToState<S extends Status, Params, Res, Upd> =
   S extends 'error' ? Readonly<Error<Params>>
   : Readonly<Idle>
 
-export type StreamToUpdates<S extends StreamType, Params, Res, Upd, K> =
+export type StreamToUpdates<S extends StreamType, Params, Res, Upd> =
   S extends 'status' ? Observable<StatusEvent<Params, Res>> :
   S extends 'warn' ? Observable<InProgress<Params, Upd, WarnToken>> :
-  Observable<InProgress<Params, Upd, NoOp>>
+  S extends 'updates' ? Observable<InProgress<Params, Upd, NoOp>> :
+  InternalError
 
-export type AvailableStreams<Upd> = Upd extends null ? 'status' | 'warn' : StreamType
+export type AvailableStreams<Upd> = Upd extends Void ? 'status' | 'warn' : StreamType
 
 export interface Cache<Res> { value: Res, set: DateMs, expired?: DateMs }
 
 export interface Meta<Params, Res, Upd> {
   status: Status
-  fireParams?: Params,
+  fireWith?: Params,
   firedAt?: DateMs
   doneAt?: DateMs
   warnedAt?: DateMs
-  updates?: Upd[]
+  update?: Upd
+  updatedAt?: DateMs
   error?: any
   value?: Res
 }

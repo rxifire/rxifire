@@ -8,6 +8,7 @@ import { finalize } from 'rxjs/operators/finalize'
 import { filter } from 'rxjs/operators/filter'
 import { share } from 'rxjs/operators/share'
 import { timeout } from 'rxjs/operators/timeout'
+import { take } from 'rxjs/operators/take'
 
 import * as P from './types.priv'
 import * as T from './types'
@@ -40,17 +41,18 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
       }, {} as P.Internal<A>)
   }
 
-  $ = <K extends keyof A, T extends P.AvailableStreams<A[K][2]>> (k: K) => (t?: T):
-    P.StreamToUpdates<T, A[K][0], A[K][1], A[K][2], K> => {
-    const _t: T.StreamType = t || 'status' as T.StreamType
-    switch (_t) {
-      case 'status': return this._acts[k][2]._status as any
-      case 'updates': return this._acts[k][2]._updates as any
-      case 'warn': return this._acts[k][2]._warn as any
-      default:
-        return _unreachable(_t)
+  $ = <K extends keyof A> (k: K): (<T extends P.AvailableStreams<A[K][2]>>(t?: T) =>
+    P.StreamToUpdates<T, A[K][0], A[K][1], A[K][2]>) => (t) => {
+      const _t: T.StreamType = (t) as T.StreamType
+      switch (_t) {
+        case 'updates': return this._acts[k][2]._updates as any
+        case 'warn': return this._acts[k][2]._warn
+        case 'status': return this._acts[k][2]._status
+        default:
+          /* istanbul ignore next */
+          return _unreachable(_t)
+      }
     }
-  }
 
   is = <K extends keyof A> (k: K, s: T.Status): boolean => this._acts[k][1].status === s
   meta = <K extends keyof A> (k: K) => this._acts[k][1] as Readonly<P.Meta<A[K][0], A[K][1], A[K][2]>>
@@ -77,32 +79,24 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
         }
         this._resetSingle(k)
 
-        meta.status = 'in-progress'
-        meta.firedAt = this._ms()
-        meta.updates = []
+        this._acts[k][1] = {
+          status: 'in-progress',
+          fireWith: ps,
+          firedAt: this._ms()
+        }
+        metaIn._status.next(this._acts[k][1] as any)
 
         metaIn._inProgress = $.merge(
           spec.warnAfter && // todo: improve
           $.timer(spec.warnAfter)
-            .pipe(tap(() => meta.warnedAt = this._ms()), filter(() => false)) || $.empty(),
-          $.defer(() => action(ps))
+            .pipe(tap(this._onWarn(k)), filter(() => false)) || $.empty(),
+          $.defer(() => ((action as any)(ps, this._onUpdate(k)) as Observable<A[K][1]>))
             .pipe(
               (spec.timeout && timeout(spec.timeout)) || (x => x),
+              take(1),
               tap(
-                (v: any) => { // todo: improve
-                  if (v.update) {
-                    meta.updates!.push(v.update)
-                  } else {
-                    meta.status = 'success'
-                    meta.doneAt = this._ms()
-                    meta.value = v
-                  }
-                },
-                e => {
-                  meta.status = 'error'
-                  meta.doneAt = this._ms()
-                  meta.error = e
-                }
+                this._toDone(k, 'success'),
+                this._toDone(k, 'error')
               ),
               takeUntil(
                 this._until.pipe(
@@ -123,8 +117,33 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
 
   private _resetSingle = <K extends keyof A> (k: K) => {
     this._until.next(k)
-    const m = this._acts[k][1]
-    Object.keys(m).forEach(mk => delete (m as any)[mk])
-    m.status = 'idle'
+    this._acts[k][1] = { status: 'idle' }
+    this._acts[k][2]._status.next(this._acts[k][1] as any)
+  }
+
+  private _toDone = <K extends keyof A> (k: K, st: 'success' | 'error') => (v?: any) => {
+    const n = Object.assign({}, this._acts[k][1], {
+      status: st, doneAt: this._ms(), value: v
+    })
+    if (st === 'error') {
+      n.value = undefined
+      n.error = v
+    }
+    this._acts[k][1] = n
+    this._acts[k][2]._status.next(n as any)
+  }
+
+  private _onUpdate = <K extends keyof A> (k: K) => (u: A[K][2]) => {
+    this._acts[k][1] = Object.assign({}, this._acts[k][1], {
+      updatedAt: this._ms(), update: u
+    })
+    this._acts[k][2]._updates.next(this._acts[k][1] as any)
+  }
+
+  private _onWarn = <K extends keyof A> (k: K) => () => {
+    this._acts[k][1] = Object.assign({}, this._acts[k][1], {
+      warnedAt: this._ms()
+    })
+    this._acts[k][2]._warn.next(this._acts[k][1] as any)
   }
 }
