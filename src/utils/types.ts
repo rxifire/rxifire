@@ -2,14 +2,6 @@ import { Observable } from 'rxjs/Observable'
 import { BehaviorSubject } from 'rxjs/BehaviorSubject'
 import { Subject } from 'rxjs/Subject'
 
-type AsUniqueToken<T extends string> = { __RXIFIRE__: T }
-type CtxToken = AsUniqueToken<'ctx'>
-
-// todo: add other fields - link to docs
-export type TypeError<Msg extends String, Ctx = CtxToken> = {
-  F$_TYPE_ERROR: Msg
-} & (Ctx extends CtxToken ? {} : { ERROR_CONTEXT: Ctx })
-
 export type AsObservables<T extends {}> = {
   [k in keyof T]: Observable<T[k]>
 }

@@ -31,14 +31,26 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
     this.keys = Object.keys(actions)
     this._acts = this.keys
       .reduce((acc, k) => {
-        acc[k] = [(actions[k] as any), { status: 'idle' },
-        { _status: new Subject(), _updates: new Subject() }, spec[k] as any || ActionsF$._empty]
+        acc[k] = [
+          (actions[k] as any), { status: 'idle' },
+          { _status: new Subject(), _updates: new Subject(), _warn: new Subject() },
+          spec[k] as any || ActionsF$._empty
+        ]
         return acc
       }, {} as P.Internal<A>)
   }
 
-  $ = <K extends keyof A, T extends T.StreamType> (k: K, t?: T) => (!t || t === 'status' ?
-    this._acts[k][2]._status as Observable<any> : this._acts[k][2]._updates) as P.StreamToUpdates<T, A[K][0], A[K][1], A[K][2], K>
+  $ = <K extends keyof A, T extends P.AvailableStreams<A[K][2]>> (k: K) => (t?: T):
+    P.StreamToUpdates<T, A[K][0], A[K][1], A[K][2], K> => {
+    const _t: T.StreamType = t || 'status' as T.StreamType
+    switch (_t) {
+      case 'status': return this._acts[k][2]._status as any
+      case 'updates': return this._acts[k][2]._updates as any
+      case 'warn': return this._acts[k][2]._warn as any
+      default:
+        return _unreachable(_t)
+    }
+  }
 
   is = <K extends keyof A> (k: K, s: T.Status): boolean => this._acts[k][1].status === s
   meta = <K extends keyof A> (k: K) => this._acts[k][1] as Readonly<P.Meta<A[K][0], A[K][1], A[K][2]>>

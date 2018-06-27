@@ -1,4 +1,4 @@
-import { TypeError } from '../'
+import { ActionsIOError } from '../utils'
 import * as P from './types.priv'
 
 export type Status = 'idle' | 'in-progress' | 'success' | 'error' // todo: consider inactive | interrupted
@@ -25,6 +25,6 @@ type ToError<T extends {}> = {
   [P in keyof T]: T[P] extends P.ActionIO ? 'OK' : T[P]
 }
 
-export type AsActionsIO<T extends {}> = T extends {
+export type AsActionsIO<T extends {}, E extends ToError<T> = ToError<T>> = T extends {
   [k: string]: P.ActionIO
-} ? T : TypeError<'ActionsIO must be of form [Params, Result, Update | null]. [todo more info]', ToError<T>>
+} ? T : ActionsIOError<{ [P in keyof T]: T[P] extends P.ActionIO ? '\u2714' : T[P] }>

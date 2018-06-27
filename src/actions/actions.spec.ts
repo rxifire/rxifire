@@ -10,7 +10,7 @@ type IO = AsActionsIO<{
   obs: [string, string[], null],
   obs2: [string, string[], null],
   obs3: [string, string[], null],
-  never: [never, never]
+  never: [never, never, void]
 
   updates: [[string, number], string, number]
 }>
@@ -123,7 +123,6 @@ test('actions - simple fire', () =>
   ctr.fire('prom')(2)
     .do(x => expect(x).toBe('2'))
     .do(() => {
-      ctr.$('obs3', 'updates')
       const m = ctr.as('prom', 'success')
       expect(m.value).toBe('2')
       expect(m.doneAt - m.firedAt).toBeGreaterThanOrEqual(0)
@@ -136,6 +135,9 @@ test('actions - ignore', () =>
   ctr.fire('prom')(2)
     .zip(ctr.fire('prom')(2).defaultIfEmpty('EMPTY'))
     .do(([n, e]) => {
+      ctr.$('obs2')('status')
+      ctr.$('obs')('status')
+      ctr.$('updates')('updates')
       expect(n).toBe('2')
       expect(e).toBe('EMPTY')
     })

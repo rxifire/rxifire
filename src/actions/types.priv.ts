@@ -2,8 +2,9 @@ import { Observable } from 'rxjs/Observable'
 import { Subject } from 'rxjs/Subject'
 
 import { AsActionsIO, ActionsSpec, Status, StreamType, StatusEvent, InProgressRefire } from './types'
-import { DateMs, Milliseconds, TypeError } from '../'
+import { DateMs, Milliseconds } from '../'
 
+type Void = void | null | undefined | never
 type AsUniqueToken<T extends string> = { __RXIFIRE__: T }
 export type NoOp = AsUniqueToken<'noop'>
 export type StartToken = AsUniqueToken<'start'>
@@ -49,10 +50,10 @@ export type Fire<A extends AsActionsIO<any>, K extends keyof A> =
 export type ActionSpec<T extends ActionIO> = {
   warnAfter: Milliseconds // action takes longer than expected
   timeout: Milliseconds  // .timeout(ms)
-  cacheFor: Milliseconds // caches successful result for that long
   inProgressRefire: InProgressRefire
 
   // todo - consider
+  // cacheFor: Milliseconds // caches successful result for that long - todo: priority medium - requires key
   // persistentCache?: boolean // false - would require passing persistence mechanism
   // stats?: boolean // keep them automatically
   // history?: boolean | number // no history for now
@@ -84,8 +85,8 @@ export type InProgress<Params, Upd, Type> = Fired<Params> & {
   status: 'in-progress'
 } & (Type extends StartToken ? {} :
   (Type extends WarnToken ? { warnedAt: DateMs } : { warnedAt?: DateMs }) &
-  (Upd extends (void | null | undefined | never) ? {} : { updates: Upd[] })
-)
+  (Upd extends (Void) ? {} : { updates: Upd[] })
+  )
 
 export interface Success<Params, Res> extends Fired<Params>, Done {
   status: 'success',
@@ -106,9 +107,9 @@ export type StatusToState<S extends Status, Params, Res, Upd> =
 export type StreamToUpdates<S extends StreamType, Params, Res, Upd, K> =
   S extends 'status' ? Observable<StatusEvent<Params, Res>> :
   S extends 'warn' ? Observable<InProgress<Params, Upd, WarnToken>> :
-  S extends 'updates' ? (Upd extends (never | null | undefined) ?
-    TypeError<'No updates defined for this action.', { action: K, updatesType: Upd }>
-    : Observable<InProgress<Params, Upd, NoOp>>) : TypeError<'Internal Error'>
+  Observable<InProgress<Params, Upd, NoOp>>
+
+export type AvailableStreams<Upd> = Upd extends null ? 'status' | 'warn' : StreamType
 
 export interface Cache<Res> { value: Res, set: DateMs, expired?: DateMs }
 
@@ -127,4 +128,5 @@ export interface MetaIn<Params, Res, Upd> {
   _inProgress?: Observable<Res> | ReturnType<WithUpdatesFn<any, Res, Upd>>
   _status: Subject<Status>
   _updates: Subject<InProgress<Params, Upd, NoOp>>
+  _warn: Subject<InProgress<Params, Upd, WarnToken>>
 }
