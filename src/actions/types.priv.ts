@@ -1,9 +1,10 @@
 import { Observable } from 'rxjs/Observable'
 import { Subject } from 'rxjs/Subject'
-import { Subscription } from 'rxjs/Subscription'
 
 import { AsActionsIO, ActionsSpec, Status } from './types'
 import { DateMs } from '../'
+
+export type SecretMarker = { __RXIFIRE__: 'RXIFIRE' }
 
 export type ActionIO<Params = any, Result = any, Update = any> =
   [Params, Result, Update]
@@ -52,12 +53,13 @@ export interface Done {
   doneAt: DateMs
 }
 
-export interface InProgress<Res, Upd> extends Fired {
-  status: 'in-progress'
-  updates: Upd[]
-  cache?: Cache<Res>
-  warnedAt?: DateMs
+export interface Idle {
+  type: 'idle'
 }
+
+export type InProgress<Upd> = Fired & {
+  status: 'in-progress'
+} & (Upd extends SecretMarker ? {} : { updates: Upd[], warnedAt?: DateMs })
 
 export interface Success<Res> extends Fired, Done {
   status: 'success',
@@ -70,7 +72,7 @@ export interface Error extends Fired, Done {
 }
 
 export type StatusToState<S extends Status, Res, Upd> =
-  S extends 'in-progress' ? InProgress<Res, Upd> :
+  S extends 'in-progress' ? InProgress<Upd> :
   S extends 'success' ? Success<Res> :
   S extends 'error' ? Error
   : never // 'idle'
@@ -85,14 +87,14 @@ export interface Meta<Res, Upd> {
   updates?: Upd[]
   error?: any
   value?: Res
-  // cache?: Cache<Res>
-  // logs: Subject<any> todo: this or make status
 }
 
-export interface MetaIn<Res, Upd> extends Meta<Res, Upd> {
-  inProgress?: Observable<Res> | ReturnType<WithUpdatesFn<any, Res, Upd>>
+export interface MetaIn<Res, Upd> {
+  _inProgress?: Observable<Res> | ReturnType<WithUpdatesFn<any, Res, Upd>>
+  _status: Subject<Status>
+  _updates: Subject<InProgress<Upd>>
 }
 
 export type Internal<A extends AsActionsIO<any>> = {
-  [K in keyof A]: [ActionsIn<A>[K], MetaIn<A[1], A[2]>, NonNullable<ActionsSpec<A>[K]>]
+  [K in keyof A]: [ActionsIn<A>[K], Meta<A[1], A[2]>, MetaIn<A[1], A[2]>, NonNullable<ActionsSpec<A>[K]>]
 }

@@ -31,7 +31,8 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
     this.keys = Object.keys(actions)
     this._acts = this.keys
       .reduce((acc, k) => {
-        acc[k] = [(actions[k] as any), { status: 'idle' }, spec[k] as any || ActionsF$._empty]
+        acc[k] = [(actions[k] as any), { status: 'idle' },
+        { _status: new Subject(), _updates: new Subject() }, spec[k] as any || ActionsF$._empty]
         return acc
       }, {} as P.Internal<A>)
   }
@@ -47,7 +48,7 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
     = <K extends keyof A> (k: K) => ((ps: A[K][1]) =>
       $.defer(() => {
         // need to defer as the action may be subscribed later - todo: detect such case and warn / add flag
-        const [action, meta, spec] = this._acts[k]
+        const [action, meta, metaIn, spec] = this._acts[k]
         if (meta.status === 'in-progress') {
           const sp = spec.inProgressRefire || 'not-allowed'
           switch (sp) {
@@ -65,7 +66,7 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
         meta.firedAt = this._ms()
         meta.updates = []
 
-        meta.inProgress = $.merge(
+        metaIn._inProgress = $.merge(
           spec.warnAfter && // todo: improve
           $.timer(spec.warnAfter)
             .pipe(tap(() => meta.warnedAt = this._ms()), filter(() => false)) || $.empty(),
@@ -97,7 +98,7 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
               share()
             )
         )
-        return meta.inProgress
+        return metaIn._inProgress
       })) as any // todo: check if could be improved - required to allow 0 params
 
   reset = <K extends keyof A> (ks?: K | K[]): void =>

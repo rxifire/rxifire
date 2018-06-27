@@ -9,6 +9,10 @@ export type InProgressRefire =
   // | 'join' // .share - will get the result -- todo: remove or only if params are the same otherwise it does not make much sense
   | 'ignore' // $.empty()
 
+export type StreamType = 'status' | 'updates'
+
+export type StatusEvent<Res> = P.Idle | P.InProgress<P.SecretMarker> | P.Success<Res> | Error
+
 export type Actions<T extends AsActionsIO<any>> = {
   [K in keyof T]: P.ActionFn<T[K]>
 }
