@@ -1,5 +1,4 @@
 import { DateMs, Milliseconds, InternalError } from '../utils'
-import { Observable } from 'rxjs/Observable'
 
 export type ImmStatus = 'loading' | 'active' | 'completed' | 'error'
 type LoadedStatus = Exclude<ImmStatus, 'loading'>
@@ -31,5 +30,5 @@ export type Immortal = ImmLoading | ImmActive | ImmCompleted | ImmError
 export type ImmortalSpec = {
   longLoad?: Milliseconds
   shareable?: boolean
-  onError?: (e: any) => boolean // known
+  onError?: (e: any) => void
 }
