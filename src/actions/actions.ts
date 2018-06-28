@@ -40,7 +40,7 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
   }
 
   $ = <K extends keyof A> (k: K): (<T extends P.AvailableStreams<A[K][2]>>(t?: T) =>
-    P.StreamToUpdates<T, A[K][0], A[K][1], A[K][2]>) => (t) => {
+    P.StreamTypeToEvents<T, A[K][0], A[K][1], A[K][2]>) => (t) => {
       const _t = t as T.StreamType || 'status'
       switch (_t) {
         case 'updates': return this._acts[k][2]._updates
@@ -67,7 +67,7 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
         if (meta.status === 'in-progress') {
           const sp = spec.inProgressRefire || 'not-allowed'
           switch (sp) {
-            case 'not-allowed': return _throw(ErrorCode.FIRE_IN_PROGRESS)
+            case 'not-allowed': return _throw(ErrorCode.EXCLUSIVE_REQUIRED)
             case 'ignore': return $.empty()
             case 'stop-then-refire': break
             // case 'join': return meta.inProgress

@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs/BehaviorSubject'
 
-import { AsCallbacks, AsBehaviors, AsObservables } from '../utils/types'
+import { AsCallbacks, AsBehaviors, AsObservables } from '../utils'
 
 import { SignalsF$ } from './signals'
 

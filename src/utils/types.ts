@@ -23,7 +23,7 @@ export type AsCallbacks<T extends {}> = {
 export type FnParams<P, R> =
   P extends Void ? () => R : (p: P) => R
 
-// todo: make them pseudo opaque
+// todo: make them pseudo opaque + cast methods
 export type Seconds = number
 export type Milliseconds = number
 export type DateMs = Milliseconds

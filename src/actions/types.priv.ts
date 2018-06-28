@@ -106,7 +106,7 @@ export type StatusToState<S extends Status, Params, Res, Upd> =
   S extends 'error' ? Readonly<Error<Params>>
   : Readonly<Idle>
 
-export type StreamToUpdates<S extends StreamType, Params, Res, Upd> =
+export type StreamTypeToEvents<S extends StreamType, Params, Res, Upd> =
   S extends 'status' ? Observable<StatusEvent<Params, Res>> :
   S extends 'warn' ? Observable<InProgress<Params, Upd, WarnToken>> :
   S extends 'updates' ? Observable<InProgress<Params, Upd, NoOp>> :

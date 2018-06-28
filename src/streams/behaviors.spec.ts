@@ -3,9 +3,9 @@ import { Observable as $ } from 'rxjs/Observable'
 import { BehaviorsF$ } from './behaviors'
 
 interface Behaviors {
-  a: number,
-  b: string,
-  c: { a: number, b: string },
+  a: number
+  b: string
+  c: { a: number, b: string }
 }
 
 const start: Behaviors = {
