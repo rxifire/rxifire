@@ -1,4 +1,4 @@
-import { PolyF$ } from './poly'
+import { PolyF$, PolySpec } from './poly'
 import { RxifireError } from '../utils'
 
 const T = true
@@ -8,7 +8,18 @@ const transitions = {
   'c': { a: T }
 }
 
+const A = {
+  a1: { a2: T },
+  a2: { a1: T }
+}
+// const ASpec: PolySpec = {}
+
 test('poly - simple', () => {
+  // const pa = new PolyF$()
+  // const p = new PolyF$({ transitions, initial: 'c',
+  //   down: { a: { transitions: A, initial: 'a1' } } })
+  // const d = p.down('a')
+  // if (d) d.from('a1')
   const p = new PolyF$({ transitions, initial: 'c' })
   expect(p.is('c')).toBe(true)
   expect(() => p.from('a')('c')).toThrowError(RxifireError)
