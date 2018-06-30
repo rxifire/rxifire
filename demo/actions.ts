@@ -25,7 +25,7 @@ const withDefault = (c?: Partial<Config>) => ({
   ...c
 } as Config)
 
-export const someActions = (cfg?: Partial<Config>, spec?: ActionsSpec<ActionsIO>) => {
+export const mockActions = (cfg?: Partial<Config>, spec?: ActionsSpec<ActionsIO>) => {
   const c = withDefault(cfg)
   const t = tick(c.tickLength)
   const actions: Actions = {
