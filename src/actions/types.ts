@@ -13,7 +13,7 @@ export type StreamType = 'status' | 'updates' | 'warn'
 
 export type StatusEvent<Params, Res> = P.Idle | P.InProgress<Params, any, P.StartToken> | P.Success<Params, Res> | P.Error<Params>
 
-export type Actions<T extends AsActionsIO<any>> = {
+export type AsActions<T extends AsActionsIO<any>> = {
   [K in keyof T]: P.ActionFn<T[K]>
 }
 

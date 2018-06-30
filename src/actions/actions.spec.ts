@@ -1,7 +1,7 @@
 import 'rxjs-compat'
 import { Observable as $ } from 'rxjs/Observable'
 
-import { ActionsF$, AsActionsIO, ActionsSpec, Actions } from '.'
+import { ActionsF$, AsActionsIO, ActionsSpec, AsActions } from '.'
 import { RxifireError } from '../utils'
 
 // todo: this will be modified once variadic params landed in TS
@@ -17,7 +17,7 @@ type IO = AsActionsIO<{
   ups: [[string, number], string, number]
 }>
 
-const acts: Actions<IO> = {
+const acts: AsActions<IO> = {
   prom: (n) => Promise.resolve(`${n}`),
   obs: (s) => $.of(s.split('')).delay(1),
   obs2: (s) => $.of(s.split('')).delay(2),

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Observable } from 'rxjs'
 
 import * as F$ from '../../src'
-import { Actions } from '../../src/actions/types'
+import { someActions, Actions } from '../actions'
 
 export type DoB = { day: number, month: number, year: number }
 export type Pos = { x: number, y: number }
@@ -16,30 +16,18 @@ export interface Behaviors {
   name: string, dob: DoB | undefined, count: number, x: string
 }
 
-export type State = {
+export interface State {
   name: string
   pos: Pos
 }
 
-type ActionsSpc = {
-  asyncA: [number, string, null],
-  asyncB: [string, string[], null]
-  asyncUp: [string, string[], number]
-}
-
-type Spec = F$.ComponentSpec<State, Signals, ActionsSpc, Behaviors>
-
-export const effectsC: Actions<ActionsSpc> = {
-  asyncA: (n) => Observable.of(`${n}`),
-  asyncB: (s) => Observable.of(s.split('')),
-  asyncUp: (s) => Observable.of(s.split('')).delay(2000)
-}
+type Spec = F$.ComponentSpec<State, Signals, Actions, Behaviors>
 
 export const spec: Spec = {
-  defaultBehaviors: {
+  behaviorsDefaults: {
     name: '', dob: undefined as DoB | undefined, count: 0, x: '0'
   },
-  actions: effectsC
+  actions: someActions() as any
 
   // stats: ['count', 'dob', 'name']
 }

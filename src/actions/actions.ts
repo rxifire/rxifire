@@ -25,7 +25,7 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
   private _ms: () => DateMs
   private _until = new Subject<keyof A>()
 
-  constructor (actions: T.Actions<A>, spec: T.ActionsSpec<A> = {}, timeMs = () => Date.now()) {
+  constructor (actions: T.AsActions<A>, spec: T.ActionsSpec<A> = {}, timeMs = () => Date.now()) {
     this._ms = timeMs
     this.keys = Object.keys(actions)
     this._acts = this.keys
