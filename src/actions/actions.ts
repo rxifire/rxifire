@@ -1,21 +1,10 @@
-
-import { Observable } from 'rxjs/Observable'
-import { Subject } from 'rxjs/Subject'
-
-import { tap } from 'rxjs/operators/tap'
-import { takeUntil } from 'rxjs/operators/takeUntil'
-import { finalize } from 'rxjs/operators/finalize'
-import { filter } from 'rxjs/operators/filter'
-import { share } from 'rxjs/operators/share'
-import { timeout } from 'rxjs/operators/timeout'
-import { take } from 'rxjs/operators/take'
-
 import * as P from './types.priv'
 import * as T from './types'
 
-import { _throw, ErrorCode, _unreachable, DateMs } from '../utils'
-
-const $ = Observable
+import {
+  _throw, ErrorCode, _unreachable, DateMs,
+  $, Observable, Subject, tap, takeUntil, finalize, filter, share, timeout, take
+} from '../utils'
 
 export class ActionsF$<A extends T.AsActionsIO<any>> {
   private static readonly _empty = {}

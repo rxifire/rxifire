@@ -29,7 +29,10 @@ export const spec: Spec = {
   behaviorsDefaults: {
     name: '', dob: undefined as DoB | undefined, count: 0, x: '0'
   },
-  actions: actions as F$.ActionsF$<any>
+  actions: actions as F$.ActionsF$<any>,
+  animate: {
+    count: (a) => a
+  }
 }
 
 const log: F$.Logic<Spec> = ({ beh, sig, act }) => {

@@ -1,20 +1,7 @@
-import { Observable } from 'rxjs/Observable'
-import { Subject } from 'rxjs/Subject'
 
 import { ImmortalSpec, Immortal, ImmStatus, StatusToImmortal, ImmLoading, ImmError, ImmCompleted } from './immortal.types'
-import { _throw, ErrorCode } from '../utils'
-
-import { tap } from 'rxjs/operators/tap'
-import { filter } from 'rxjs/operators/filter'
-import { switchMap } from 'rxjs/operators/switchMap'
-import { share } from 'rxjs/operators/share'
-import { retryWhen } from 'rxjs/operators/retryWhen'
-
-import { merge } from 'rxjs/observable/merge'
-import { empty } from 'rxjs/observable/empty'
-import { timer } from 'rxjs/observable/timer'
-
-const $ = Observable
+import { _throw, ErrorCode,
+  $, Observable, Subject, tap, filter, switchMap, share, retryWhen, merge, empty, timer } from '../utils'
 
 // Ready must thou be to burn thyself in thine own flame;
 // how couldst thou become new if thou have not first become ashes!'
