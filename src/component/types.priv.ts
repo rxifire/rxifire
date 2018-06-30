@@ -8,7 +8,7 @@ export type SpecToState<T extends Spec> = NonNullable<T['__F$__']>[0]
 export type SpecToSig<T extends Spec> = NonNullable<T['__F$__']>[1]
 
 export type Animate<Behaviors extends {}> = {
-  [K in keyof Behaviors]?: (v: Observable<Behaviors[K]>) => Observable<number>
+  [K in keyof Behaviors]?: (v: Observable<Behaviors[K]>) => Observable<number | Behaviors[K] | string>
 }
 
 type AnimateToLogic<A extends Animate<any>> = NonNullable<{ [P in keyof A]: NonNullable<ReturnType<NonNullable<A[P]>>> }>
