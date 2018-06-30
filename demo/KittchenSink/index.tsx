@@ -28,10 +28,8 @@ const actions = mockActions()
 export const spec: Spec = {
   behaviorsDefaults: {
     name: '', dob: undefined as DoB | undefined, count: 0, x: '0'
-  }
-  // actions: actions
-
-  // stats: ['count', 'dob', 'name']
+  },
+  actions: actions as F$.ActionsF$<any>
 }
 
 const log: F$.Logic<Spec> = ({ beh, sig, act }) => {
@@ -41,7 +39,7 @@ const log: F$.Logic<Spec> = ({ beh, sig, act }) => {
   return Observable.of({ name: 'ab', pos: { x: 0, y: 0 } })
 }
 
-const view: F$.View<Spec> = ps => (s) => {
-  ps.act.is('error', 'in-progress')
+const view: F$.JSXView<Spec> = ps => (s) => {
+  ps.act.is('randomNumber', 'in-progress')
   return <h1>HELLO ${s.name}</h1>
 }
