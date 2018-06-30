@@ -4,7 +4,7 @@ import { DateMs, Milliseconds, Count } from '../src'
 
 const $ = Observable
 
-type ActionsIO = AsActionsIO<{
+export type ActionsIO = AsActionsIO<{
   randomNumber: [never, number, null],
   randomNumbers: [number, number[], number],
   error: [null, never, number]

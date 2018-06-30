@@ -3,6 +3,8 @@ import { ImmortalSpec, Immortal, ImmStatus, StatusToImmortal, ImmLoading, ImmErr
 import { _throw, ErrorCode,
   $, Observable, Subject, tap, filter, switchMap, share, retryWhen, merge, empty, timer } from '../utils'
 
+export * from './immortal.types'
+
 // Ready must thou be to burn thyself in thine own flame;
 // how couldst thou become new if thou have not first become ashes!'
 
