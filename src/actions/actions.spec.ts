@@ -227,3 +227,19 @@ test('actions - updates', () =>
     .merge(ctr.fire('ups')(['abcdefghij', 1]))
     .toPromise()
 )
+
+test('actions - all', () =>
+  ctr.$s()
+    .merge(
+      ctr.fire('prom')(12).ignoreElements(),
+      ctr.fire('never')().catch(() => $.empty()).ignoreElements()
+    )
+    .take(5)
+    .map(x => [x[0], x[1].status])
+    .toArray()
+    .do(x => expect(x).toEqual([
+      ['prom', 'in-progress'], ['never', 'in-progress'], ['prom', 'success'],
+      ['never', 'in-progress'], ['never', 'error']
+    ]))
+    .toPromise()
+)

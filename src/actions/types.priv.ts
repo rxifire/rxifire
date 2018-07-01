@@ -130,7 +130,7 @@ export interface Meta<Params, Res, Upd> {
 
 export interface MetaIn<Params, Res, Upd> {
   _inProgress?: Observable<Res> | ReturnType<WithUpdatesFn<any, Res, Upd>>
-  _status: Subject<Status>
-  _updates: Subject<InProgress<Params, Upd, NoOp>>
-  _warn: Subject<InProgress<Params, Upd, WarnToken>>
+  // _status: Subject<Status>
+  // _updates: Subject<InProgress<Params, Upd, NoOp>>
+  // _warn: Subject<InProgress<Params, Upd, WarnToken>>
 }
