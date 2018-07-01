@@ -9,12 +9,13 @@ export type SpecToSig<T extends Spec> = NonNullable<T['__F$__']>[1]
 export type SpecToExt<T extends Spec> = NonNullable<T['__F$__']>[2]
 
 export type Animate<Behaviors extends {}, Ks extends keyof Behaviors = never> = {
-  [K in Ks]: (v: Observable<Behaviors[K]>) => Observable<Behaviors[K]>
+  [K in Ks]: Behaviors[K] extends boolean ? (v: Observable<boolean>) => Observable<number> :
+  (v: Observable<Behaviors[K]>) => Observable<Behaviors[K]>
 }
 
 type AnimateToView<A extends Animate<any, any>> = {
   [P in keyof A]: A[P] extends undefined ? never :
-  (ReturnType<NonNullable<A[P]>> extends Observable<infer U> ? U : 'dupa')
+  (ReturnType<NonNullable<A[P]>> extends Observable<infer U> ? U : '__INCORRECT__')
 }
 
 export type LogicParams<T extends Spec> =

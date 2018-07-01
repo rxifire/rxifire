@@ -9,16 +9,18 @@ type Config = {
 
 const tangle = ({ spec, logic, view }: Config, external?: any) => {
   const beh = spec.behaviorsDefaults && new BehaviorsF$(spec.behaviorsDefaults)
+  const ani = spec.animate && new BehaviorsF$(spec.animate)
   const sig = new SignalsF$()
   const log = new ImmortalF$(logic({ beh, sig, tsk: spec.tasks, ...external }))
 
-  const v = view({ beh, sig, meta: log, tsk: spec.tasks })
+  const v = view({ beh, sig, meta: log, tsk: spec.tasks, ani })
 
   return {
     logic: log,
     view: v,
     beh,
     sig,
+    ani,
     tsk: spec.tasks
   }
 }
@@ -40,7 +42,7 @@ export class JSXBridge extends React.Component<{ props: any, config: Config }> {
   }
 
   componentDidMount () {
-    const { logic, view, beh, tsk } = tangle(this.props.config, { props: this._ps })
+    const { logic, view, beh, tsk, ani } = tangle(this.props.config, { props: this._ps })
     this._v = view
     this.sub = logic.run
       .pipe(tap(s => { this._s = s; this.forceUpdate() }))
@@ -48,6 +50,19 @@ export class JSXBridge extends React.Component<{ props: any, config: Config }> {
 
     beh && this.sub.add(beh.changed.pipe(tap(() => this.forceUpdate())).subscribe())
     tsk && this.sub.add(tsk.$s().pipe(observeOn(animationFrame), tap(() => this.forceUpdate())).subscribe())
+    if (ani) {
+      const ks = Object.keys(this.props.config.spec.animate!)
+      const bs = beh!.$s(ks as any)
+      console.log(bs, ks, ani, this.props.config.spec.animate)
+      ks.forEach(k => this.sub.add(
+        (bs as any)[k]
+          .pipe(
+            (this.props.config.spec.animate![k]),
+            tap(v => { (ani as any).fire(k)(v); this.forceUpdate() })
+          )
+          .subscribe())
+      )
+    }
   }
 
   componentWillUnmount () {

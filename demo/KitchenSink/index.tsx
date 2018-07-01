@@ -4,6 +4,8 @@ import { Observable } from 'rxjs'
 import * as F$ from '../../src'
 import { fakeTasks, ActionsIO } from '../tasks'
 
+import { linearAnimation } from '../../src/utils/animations'
+
 const $ = Observable
 
 export type DoB = { day: number, month: number, year: number }
@@ -35,7 +37,7 @@ export const spec: Spec = {
   tasks: tasks as F$.TasksF$<any>,
   animate: {
     count: (a) => a.map(n => n),
-    open: () => Observable.empty()
+    open: o => o.map(v => v ? 100 : 0).pipe(linearAnimation(200))
   }
 }
 
@@ -55,7 +57,10 @@ const view: F$.JSXView<Spec> = ps => (s) => <div>
   {ps.tsk.meta('randomNumbers').update + ' ' + ps.tsk.meta('randomNumbers').status}
   <div>
     <button onClick={ps.sig.fire('click')} >click</button>
+    <button onClick={() => ps.beh.update('open')(o => !o)} >toggle</button>
     {ps.beh.v('count')}
+    <br />
+    {console.log((ps.ani as any).v('open')) || (ps.ani as any).v('open') + ''}
   </div>
 </div>
 
