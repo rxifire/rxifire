@@ -3,4 +3,4 @@ export * from './utils/types'
 
 export * from './streams'
 export * from './tasks'
-export * from './component/component'
+export * from './component/jsx-component'

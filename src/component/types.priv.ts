@@ -2,7 +2,7 @@ import { Observable } from 'rxjs/Observable'
 import { BehaviorsF$, SignalsF$, ImmortalF$ } from '../streams'
 import { ComponentSpec } from './types'
 
-type Spec = ComponentSpec<any, any, any, any, never>
+type Spec = ComponentSpec<any, any, any, any, any, any>
 
 export type SpecToState<T extends Spec> = NonNullable<T['__F$__']>[0]
 export type SpecToSig<T extends Spec> = NonNullable<T['__F$__']>[1]
@@ -28,4 +28,6 @@ export type ViewParams<T extends Spec> =
   (T['tasks'] extends undefined ? {} : { tsk: Pick<NonNullable<T['tasks']>, 'meta' | 'is'> }) &
   (T['animate'] extends undefined ? {} : { ani: AnimateToView<NonNullable<T['animate']>> }) &
   (T['behaviorsDefaults'] extends undefined ? {} : { beh: Pick<BehaviorsF$<NonNullable<T['behaviorsDefaults']>>, Exclude<keyof BehaviorsF$<Required<T['behaviorsDefaults']>>, '$' | '$s'>> }) &
-  ({ meta: Pick<ImmortalF$<any, SpecToState<T>>, 'is' | 'as'>})
+  ({ meta: Pick<ImmortalF$<any, SpecToState<T>>, 'is' | 'as'> })
+
+export type SpecToProps<T extends Spec> = SpecToExt<T>

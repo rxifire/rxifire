@@ -24,7 +24,7 @@ export interface State {
 }
 
 type Spec = F$.ComponentSpec<State, Signals, Pick<ActionsIO, 'randomNumbers'>,
-  Behaviors, 'count' | 'open', { props: Observable<number> }>
+  Behaviors, 'count' | 'open', { value: string }>
 
 const tasks = fakeTasks({ tickLength: 50 })
 
@@ -39,19 +39,19 @@ export const spec: Spec = {
   }
 }
 
-const log: F$.Logic<Spec> = ({ beh, sig, tsk }) => {
+const log: F$.JSXLogic<Spec> = ({ beh, sig, tsk, props }) => {
   beh.$('dob')
   sig.$('click')
-  // act.meta('error')
   return Observable.of({ name: 'ab', pos: { x: 0, y: 0 } })
     .merge($.timer(0, 1000).map(x => ({ name: `${x}-`, pos: { x, y: -x } })))
     .merge($.timer(2000).mergeMap(() => tsk.fire('randomNumbers')(100)).ignoreElements())
     .delay(1)
     .merge(sig.$('click').do(() => beh.update('count')(x => x + 1)).ignoreElements())
+    .merge(props.do(p => beh.fire('name')(p.value)).ignoreElements())
 }
 
 const view: F$.JSXView<Spec> = ps => (s) => <div>
-  <h1>HELLO ${s.name} {ps.meta.is('active') + ''}</h1>
+  <h1>HELLO ${s.name} or {ps.beh.v('name')} {ps.meta.is('active') + ''}</h1>
   {ps.tsk.meta('randomNumbers').update + ' ' + ps.tsk.meta('randomNumbers').status}
   <div>
     <button onClick={ps.sig.fire('click')} >click</button>

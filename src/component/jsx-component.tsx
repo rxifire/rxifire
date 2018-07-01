@@ -1,10 +1,10 @@
 import * as React from 'react'
-import { BehaviorSubject, Subscription, tap, animationFrame, observeOn } from '../utils'
+import { BehaviorSubject, Subscription, Observable, tap, animationFrame, observeOn } from '../utils'
 import { SignalsF$, BehaviorsF$, ImmortalF$ } from '../streams'
-import { CreateJSXComponent, Logic, ComponentSpec, JSXView } from './types'
+import { CreateJSXComponent, JSXLogic, ComponentSpec, JSXView } from './types'
 
 type Config = {
-  spec: ComponentSpec<any, any, any, any, any, any>, logic: Logic<any>, view: JSXView<any>
+  spec: ComponentSpec<any, any, any, any, any, any>, logic: JSXLogic<any>, view: JSXView<any>
 }
 
 const tangle = ({ spec, logic, view }: Config, external?: any) => {
@@ -57,6 +57,6 @@ export class JSXBridge extends React.Component<{ props: any, config: Config }> {
   render () { return this._s && this._v(this._s) || null }
 }
 
-export const createJSXComponent: CreateJSXComponent = (spec, view, logic) => props => {
+export const createJSXComponent: CreateJSXComponent = (spec, view, logic) => (props) => {
   return <JSXBridge props={props} config={{ spec, view, logic }} />
 }
