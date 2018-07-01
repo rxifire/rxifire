@@ -10,9 +10,9 @@ type Config = {
 const tangle = ({ spec, logic, view }: Config, external?: any) => {
   const beh = spec.behaviorsDefaults && new BehaviorsF$(spec.behaviorsDefaults)
   const sig = new SignalsF$()
-  const log = new ImmortalF$(logic({ beh, sig, act: spec.actions, ...external }))
+  const log = new ImmortalF$(logic({ beh, sig, tsk: spec.tasks, ...external }))
 
-  const v = view({ beh, sig, meta: log, act: spec.actions })
+  const v = view({ beh, sig, meta: log, tsk: spec.tasks })
 
   return {
     logic: log,

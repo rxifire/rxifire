@@ -2,5 +2,5 @@ export * from './component/types'
 export * from './utils/types'
 
 export * from './streams'
-export * from './actions'
+export * from './tasks'
 export * from './component/component'

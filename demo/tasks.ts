@@ -1,10 +1,8 @@
-import { Observable } from 'rxjs/Observable'
-import { AsActions, AsActionsIO, ActionsF$, ActionsSpec } from '../src/actions'
+import { AsTasks, AsTasksIO, TasksF$, TasksSpec } from '../src/tasks'
 import { DateMs, Milliseconds, Count } from '../src'
+import { $ } from '../src/utils'
 
-const $ = Observable
-
-export type ActionsIO = AsActionsIO<{
+export type ActionsIO = AsTasksIO<{
   randomNumber: [never, number, null],
   randomNumbers: [number, number[], number],
   error: [null, never, number]
@@ -15,7 +13,7 @@ type Config = {
   tickLength: Milliseconds
 }
 
-export type Actions = AsActions<ActionsIO>
+export type Tasks = AsTasks<ActionsIO>
 
 const tick = (tick: Milliseconds) => (ticks: Count) => tick * ticks
 
@@ -25,10 +23,10 @@ const withDefault = (c?: Partial<Config>) => ({
   ...c
 } as Config)
 
-export const mockActions = (cfg?: Partial<Config>, spec?: ActionsSpec<ActionsIO>) => {
+export const fakeTasks = (cfg?: Partial<Config>, spec?: TasksSpec<ActionsIO>) => {
   const c = withDefault(cfg)
   const t = tick(c.tickLength)
-  const actions: Actions = {
+  const tasks: Tasks = {
     randomNumber: () => $.timer(t(1)).mapTo(Math.random()),
     randomNumbers: (n, onUpdate) => $.timer(t(1), t(1))
       .take(n)
@@ -41,5 +39,5 @@ export const mockActions = (cfg?: Partial<Config>, spec?: ActionsSpec<ActionsIO>
       .last()
       .mergeMapTo($.throw('ERROR'))
   }
-  return new ActionsF$(actions, spec, c.currentTime)
+  return new TasksF$(tasks, spec, c.currentTime)
 }

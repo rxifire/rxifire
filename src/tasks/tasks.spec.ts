@@ -1,11 +1,11 @@
 import 'rxjs-compat'
 import { Observable as $ } from 'rxjs/Observable'
 
-import { ActionsF$, AsActionsIO, ActionsSpec, AsActions } from '.'
+import { TasksF$, AsTasksIO, TasksSpec, AsTasks } from '.'
 import { RxifireError } from '../utils'
 
 // todo: this will be modified once variadic params landed in TS
-type IO = AsActionsIO<{
+type IO = AsTasksIO<{
   prom: [number, string, null],
   obs: [string, string[], null],
   obs2: [string, string[], null],
@@ -17,7 +17,7 @@ type IO = AsActionsIO<{
   ups: [[string, number], string, number]
 }>
 
-const acts: AsActions<IO> = {
+const acts: AsTasks<IO> = {
   prom: (n) => Promise.resolve(`${n}`),
   obs: (s) => $.of(s.split('')).delay(1),
   obs2: (s) => $.of(s.split('')).delay(2),
@@ -35,7 +35,7 @@ const acts: AsActions<IO> = {
           .merge(i === w.length - 1 ? $.of(w) : $.empty()))
 }
 
-const spec: ActionsSpec<IO> = {
+const spec: TasksSpec<IO> = {
   prom: {
     inProgressRefire: 'ignore'
   },
@@ -50,9 +50,9 @@ const spec: ActionsSpec<IO> = {
   }
 }
 
-let ctr: ActionsF$<IO>
+let ctr: TasksF$<IO>
 
-beforeEach(() => ctr = new ActionsF$(acts, spec))
+beforeEach(() => ctr = new TasksF$(acts, spec))
 
 test('actions - idle', () => {
   expect(ctr.is('obs', 'idle')).toBe(true)
@@ -206,7 +206,7 @@ test('actions - stop-then-refire', () =>
 )
 
 test('actions - reset', () => {
-  ctr = new ActionsF$(acts, spec, () => Date.now())
+  ctr = new TasksF$(acts, spec, () => Date.now())
   expect(ctr.meta('obs').status === 'idle').toBe(true)
   ctr.fire('obs')('').toPromise()
   expect(ctr.meta('obs').status === 'in-progress').toBe(true)

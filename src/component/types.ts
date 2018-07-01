@@ -1,13 +1,13 @@
 import { Observable } from 'rxjs'
 import * as P from './types.priv'
-import { AsActions, ActionsF$, AsActionsIO } from '../actions'
+import { AsTasks, TasksF$, AsTasksIO } from '../tasks'
 import { ImmortalSpec } from '../streams'
 
 // todo: try to minimize amount of generics - especially when using it from outside
 export interface ComponentSpec<
   State,
   Signals extends {},
-  Actions extends AsActionsIO<{}>,
+  Actions extends AsTasksIO<{}>,
   Behaviors extends {},
   Animate extends keyof Behaviors = keyof Behaviors,
   External extends {} = {}
@@ -15,7 +15,7 @@ export interface ComponentSpec<
   logic?: ImmortalSpec
 
   behaviorsDefaults?: Required<Behaviors>
-  actions?: ActionsF$<Actions>
+  tasks?: TasksF$<Actions>
 
   // it is not very flexible but should cover 90% of use cases
   animate?: P.Animate<Behaviors, Animate>,

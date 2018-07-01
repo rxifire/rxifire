@@ -19,13 +19,13 @@ type AnimateToView<A extends Animate<any, any>> = {
 
 export type LogicParams<T extends Spec> =
   (SpecToSig<T> extends undefined ? {} : { sig: SignalsF$<SpecToSig<T>> }) &
-  (T['actions'] extends undefined ? {} : { act: NonNullable<T['actions']> }) &
+  (T['tasks'] extends undefined ? {} : { tsk: NonNullable<T['tasks']> }) &
   (T['behaviorsDefaults'] extends undefined ? {} : { beh: BehaviorsF$<NonNullable<T['behaviorsDefaults']>> }) &
   SpecToExt<T>
 
 export type ViewParams<T extends Spec> =
   (SpecToSig<T> extends undefined ? {} : { sig: Pick<SignalsF$<SpecToSig<T>>, 'fire'> }) &
-  (T['actions'] extends undefined ? {} : { act: Pick<NonNullable<T['actions']>, 'meta' | 'is'> }) &
+  (T['tasks'] extends undefined ? {} : { tsk: Pick<NonNullable<T['tasks']>, 'meta' | 'is'> }) &
   (T['animate'] extends undefined ? {} : { ani: AnimateToView<NonNullable<T['animate']>> }) &
   (T['behaviorsDefaults'] extends undefined ? {} : { beh: Pick<BehaviorsF$<NonNullable<T['behaviorsDefaults']>>, Exclude<keyof BehaviorsF$<Required<T['behaviorsDefaults']>>, '$' | '$s'>> }) &
   ({ meta: Pick<ImmortalF$<any, SpecToState<T>>, 'is' | 'as'>})

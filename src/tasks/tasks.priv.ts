@@ -3,7 +3,7 @@ import { Subject } from 'rxjs/Subject'
 
 import { InternalError, Void, DateMs, Milliseconds } from '../utils'
 
-import { AsActionsIO, ActionsSpec, Status, StreamType, StatusEvent, InProgressRefire } from './types'
+import { AsTasksIO, TasksSpec, Status, StreamType, StatusEvent, InProgressRefire } from './types'
 
 type AsUniqueToken<T extends string> = { __RXIFIRE__: T }
 export type NoOp = AsUniqueToken<'noop'>
@@ -38,11 +38,11 @@ export type ActionFnIn<T extends ActionIO> =
   T[2] extends Void ?
   (SimpleObs<T[0], T[1]>) : WithUpdatesFn<T[0], T[1], T[2]>
 
-export type ActionsIn<T extends AsActionsIO<any>> = {
+export type ActionsIn<T extends AsTasksIO<any>> = {
   [K in keyof T]: ActionFnIn<T[K]>
 }
 
-export type Fire<A extends AsActionsIO<any>, K extends keyof A> =
+export type Fire<A extends AsTasksIO<any>, K extends keyof A> =
   A[K][0] extends Void ?
   (A[K][2] extends Void ?
     () => Observable<A[K][1]> : () => WithUpdates<A[K][1], A[K][2]>)
@@ -63,8 +63,8 @@ export type ActionSpec<T extends ActionIO> = {
 }
 
 // IMPORTANT: defines internals of implementation
-export type Internal<A extends AsActionsIO<any>> = {
-  [K in keyof A]: [ActionsIn<A>[K], Meta<A[0], A[1], A[2]>, MetaIn<A[0], A[1], A[2]>, NonNullable<ActionsSpec<A>[K]>]
+export type Internal<A extends AsTasksIO<any>> = {
+  [K in keyof A]: [ActionsIn<A>[K], Meta<A[0], A[1], A[2]>, MetaIn<A[0], A[1], A[2]>, NonNullable<TasksSpec<A>[K]>]
 }
 
 // todo: add fire config - priority low

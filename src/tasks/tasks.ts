@@ -1,4 +1,4 @@
-import * as P from './types.priv'
+import * as P from './tasks.priv'
 import * as T from './types'
 
 import {
@@ -6,7 +6,7 @@ import {
   $, Observable, Subject, tap, takeUntil, finalize, filter, share, timeout, take, merge, map
 } from '../utils'
 
-export class ActionsF$<A extends T.AsActionsIO<any>> {
+export class TasksF$<A extends T.AsTasksIO<any>> {
   private static readonly _empty = {}
   public readonly updates: Observable<[keyof A, P.InProgress<any, any, P.NoOp>]>
   public readonly warns: Observable<[keyof A, P.InProgress<any, any, P.WarnToken>]>
@@ -21,7 +21,7 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
   private _warns = new Subject<[keyof A, P.InProgress<any, any, P.WarnToken>]>()
   private _statuses = new Subject<[keyof A, T.StatusEvent<any, any>]>()
 
-  constructor (actions: T.AsActions<A>, spec: T.ActionsSpec<A> = {}, timeMs = () => Date.now()) {
+  constructor (actions: T.AsTasks<A>, spec: T.TasksSpec<A> = {}, timeMs = () => Date.now()) {
     this._ms = timeMs
     this.keys = Object.keys(actions)
     this.updates = this._updates.asObservable()
@@ -32,7 +32,7 @@ export class ActionsF$<A extends T.AsActionsIO<any>> {
         acc[k] = [
           (actions[k] as any), { status: 'idle' },
           { },
-          spec[k] as any || ActionsF$._empty
+          spec[k] as any || TasksF$._empty
         ]
         return acc
       }, {} as P.Internal<A>)
