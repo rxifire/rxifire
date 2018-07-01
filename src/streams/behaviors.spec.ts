@@ -55,3 +55,15 @@ test('behaviors - updated', () => {
   bh.update('count')(o => o + two)
   expect(bh.v('count')).toBe(3)
 })
+
+test('behaviors - changed any', () => {
+  const bh = new BehaviorsF$(start)
+  const p = bh.changed.take(4).toArray()
+    .do(x => expect(x).toHaveLength(4))
+    .toPromise()
+  bh.fire('a')(0)
+  bh.fire('b')('b')
+  bh.fire('a')(1)
+  bh.fire('b')('B')
+  return p
+})

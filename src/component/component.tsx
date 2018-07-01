@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { $, BehaviorSubject, Subscription, tap } from '../utils'
+import { BehaviorSubject, Subscription, tap, animationFrame, observeOn } from '../utils'
 import { SignalsF$, BehaviorsF$, ImmortalF$ } from '../streams'
 import { CreateJSXComponent, Logic, ComponentSpec, JSXView } from './types'
 
@@ -18,7 +18,8 @@ const tangle = ({ spec, logic, view }: Config, external?: any) => {
     logic: log,
     view: v,
     beh,
-    sig
+    sig,
+    tsk: spec.tasks
   }
 }
 
@@ -39,18 +40,21 @@ export class JSXBridge extends React.Component<{ props: any, config: Config }> {
   }
 
   componentDidMount () {
-    const { logic, view } = tangle(this.props.config)
+    const { logic, view, beh, tsk } = tangle(this.props.config, { props: this._ps })
     this._v = view
     this.sub = logic.run
       .pipe(tap(s => { this._s = s; this.forceUpdate() }))
       .subscribe()
+
+    beh && this.sub.add(beh.changed.pipe(tap(() => this.forceUpdate())).subscribe())
+    tsk && this.sub.add(tsk.$s().pipe(observeOn(animationFrame), tap(() => this.forceUpdate())).subscribe())
   }
 
   componentWillUnmount () {
     this.sub.unsubscribe()
   }
 
-  render () { return this._v && this._v(this._s) || null }
+  render () { return this._s && this._v(this._s) || null }
 }
 
 export const createJSXComponent: CreateJSXComponent = (spec, view, logic) => props => {

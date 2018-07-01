@@ -1,12 +1,14 @@
 import { BehaviorSubject } from 'rxjs/BehaviorSubject'
 
-import { AsCallbacks, AsBehaviors, AsObservables } from '../utils'
+import { AsCallbacks, AsBehaviors, AsObservables, Observable, $, merge } from '../utils'
 
 import { SignalsF$ } from './signals'
 
 export class BehaviorsF$<S extends {}> extends SignalsF$<S> {
   v: <K extends keyof S> (k: K) => S[K]
   vs: <K extends keyof S> (ks?: K[]) => Pick<S, K>
+
+  public changed: Observable<any>
 
   protected _$: AsBehaviors<S> = {} as any
   protected _cb: AsCallbacks<S> = {} as any
@@ -20,6 +22,8 @@ export class BehaviorsF$<S extends {}> extends SignalsF$<S> {
         (this._$ as any)[k] = new BehaviorSubject<any>((spec as any)[k]);
         (this._cb as any)[k] = (p: any) => (this._$ as any)[k].next(p)
       })
+
+    this.changed = merge(...Object.keys(spec).map(k => (this._$ as any)[k]))
 
     this.v = this.value
     this.vs = this.values

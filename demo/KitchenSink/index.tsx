@@ -26,7 +26,7 @@ export interface State {
 type Spec = F$.ComponentSpec<State, Signals, Pick<ActionsIO, 'randomNumbers'>,
   Behaviors, 'count' | 'open', { props: Observable<number> }>
 
-const tasks = fakeTasks()
+const tasks = fakeTasks({ tickLength: 50 })
 
 export const spec: Spec = {
   behaviorsDefaults: {
@@ -47,11 +47,16 @@ const log: F$.Logic<Spec> = ({ beh, sig, tsk }) => {
     .merge($.timer(0, 1000).map(x => ({ name: `${x}-`, pos: { x, y: -x } })))
     .merge($.timer(2000).mergeMap(() => tsk.fire('randomNumbers')(100)).ignoreElements())
     .delay(1)
+    .merge(sig.$('click').do(() => beh.update('count')(x => x + 1)).ignoreElements())
 }
 
-const view: F$.JSXView<Spec> = ps => (s) => {
- // ps.
-  return <h1>HELLO ${s.name} {ps.meta.is('active') + ''} {ps.tsk.meta('randomNumbers').update + ps.tsk.meta('randomNumbers').status + ''}</h1>
-}
+const view: F$.JSXView<Spec> = ps => (s) => <div>
+  <h1>HELLO ${s.name} {ps.meta.is('active') + ''}</h1>
+  {ps.tsk.meta('randomNumbers').update + ' ' + ps.tsk.meta('randomNumbers').status}
+  <div>
+    <button onClick={ps.sig.fire('click')} >click</button>
+    {ps.beh.v('count')}
+  </div>
+</div>
 
 export const Comp = F$.createJSXComponent(spec, view as any, log)
