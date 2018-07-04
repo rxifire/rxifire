@@ -13,9 +13,13 @@ export type Animate<Behaviors extends {}, Ks extends keyof Behaviors = never> = 
   (v: Observable<Behaviors[K]>) => Observable<Behaviors[K]>
 }
 
+// type AnimateToView<A extends Animate<any, any>> = {
+//   [P in keyof A]: A[P] extends undefined ? never :
+//   (ReturnType<NonNullable<A[P]>> extends Observable<infer U> ? U : '__INCORRECT__')
+// }
+
 type AnimateToView<A extends Animate<any, any>> = {
-  [P in keyof A]: A[P] extends undefined ? never :
-  (ReturnType<NonNullable<A[P]>> extends Observable<infer U> ? U : '__INCORRECT__')
+  v: <K extends keyof A>(k: K) => ReturnType<NonNullable<A[K]>> extends Observable<infer U> ? U : '__INCORRECT__'
 }
 
 export type LogicParams<T extends Spec> =

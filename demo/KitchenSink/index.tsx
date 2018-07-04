@@ -69,10 +69,9 @@ const view: F$.JSXView<Spec> = ps => (s) => <div>
 
   <div style={{
     position: 'fixed', backgroundColor: 'green',
-    height: '100vh', width: 200, top: 0, right: (-1 + (ps.ani as any).v('open')) * 200
+    height: '100vh', width: 200, top: 0, right: (-1 + ps.ani.v('open')) * 200
   }}>
   </div>
-  {/* {console.log((ps.ani as any).v('open'))} */}
 </div>
 
 export const Comp = F$.createJSXComponent(spec, view as any, log)
