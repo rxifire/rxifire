@@ -82,9 +82,9 @@ export class TasksF$<A extends T.AsTasksIO<any>> {
 
         this._acts[k][1] = {
           status: 'in-progress',
-          fireWith: ps,
+          firedParams: ps,
           firedAt: this._ms()
-        }
+        } as any
         this._statuses.next([k, this._acts[k][1] as T.StatusEvent<any, any>])
 
         const def = (ps !== undefined ?

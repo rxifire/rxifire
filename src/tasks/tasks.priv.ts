@@ -116,17 +116,7 @@ export type AvailableStreams<Upd> = Upd extends Void ? 'status' | 'warn' : Strea
 
 export interface Cache<Res> { value: Res, set: DateMs, expired?: DateMs }
 
-export interface Meta<Params, Res, Upd> {
-  status: Status
-  fireWith?: Params,
-  firedAt?: DateMs
-  doneAt?: DateMs
-  warnedAt?: DateMs
-  update?: Upd
-  updatedAt?: DateMs
-  error?: any
-  value?: Res
-}
+export type Meta<Params, Res, Upd> = Idle | InProgress<Params, Upd, NoOp> | Success<Params, Res> | Error<Params>
 
 export interface MetaIn<Params, Res, Upd> {
   _inProgress?: Observable<Res> | ReturnType<WithUpdatesFn<any, Res, Upd>>
