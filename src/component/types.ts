@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs'
 import * as P from './types.priv'
-import { AsTasks, TasksF$, AsTasksIO } from '../tasks'
+import { TasksF$, AsTasksIO } from '../tasks'
 import { ImmortalSpec } from '../streams'
 
 // todo: try to minimize amount of generics - especially when using it from outside

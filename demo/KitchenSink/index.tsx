@@ -4,8 +4,6 @@ import { Observable } from 'rxjs'
 import * as F$ from '../../src'
 import { fakeTasks, ActionsIO } from '../tasks'
 
-import { linearAnimation } from '../../src/utils/animations'
-
 const $ = Observable
 
 export type DoB = { day: number, month: number, year: number }
@@ -37,7 +35,9 @@ export const spec: Spec = {
   tasks: tasks as F$.TasksF$<any>,
   animate: {
     count: (a) => a.map(n => n),
-    open: o => o.map(v => v ? 100 : 0).pipe(linearAnimation(200))
+    open: o => o.map(v => v ? 1 : 0).pipe(F$.boundedAnimation({
+      min: 0, max: 1, duration: 200, easing: F$.easing.easeInQuint
+    }))
   }
 }
 
@@ -54,14 +54,25 @@ const log: F$.JSXLogic<Spec> = ({ beh, sig, tsk, props }) => {
 
 const view: F$.JSXView<Spec> = ps => (s) => <div>
   <h1>HELLO ${s.name} or {ps.beh.v('name')} {ps.meta.is('active') + ''}</h1>
-  {ps.tsk.meta('randomNumbers').update + ' ' + ps.tsk.meta('randomNumbers').status}
+  {ps.tsk.is('randomNumbers', 'in-progress') && ps.tsk.as('randomNumbers', 'in-progress').update + ' ' + ps.tsk.meta('randomNumbers').status}
   <div>
-    <button onClick={ps.sig.fire('click')} >click</button>
-    <button onClick={() => ps.beh.update('open')(o => !o)} >toggle</button>
+
+    <button onClick={ps.sig.fire('click')} >click +1</button>
     {ps.beh.v('count')}
     <br />
-    {console.log((ps.ani as any).v('open')) || (ps.ani as any).v('open') + ''}
+    <button onClick={() => ps.beh.update('open')(o => !o)} >toggle</button>
+    {`is open: ${ps.beh.v('open')}?`}
+    <br />
+    {(ps.ani as any).v('open')}
+    <br />
   </div>
+
+  <div style={{
+    position: 'fixed', backgroundColor: 'green',
+    height: '100vh', width: 200, top: 0, right: (-1 + (ps.ani as any).v('open')) * 200
+  }}>
+  </div>
+  {/* {console.log((ps.ani as any).v('open'))} */}
 </div>
 
 export const Comp = F$.createJSXComponent(spec, view as any, log)
