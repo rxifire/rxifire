@@ -97,6 +97,6 @@ const domView: F$.DOMView<Spec> = ps => s =>
   </div>
 </div>`
 
-export const JSXComp = F$.createJSXComponent(spec, jsxView as any, log)
+export const JSXComp = F$.createJSXComponent(spec, jsxView as F$.JSXView, log)
 
-export const DOMComp = F$.createDOMComponent(spec, domView as any, log)
+export const DOMComp = F$.createDOMComponent(spec, domView as F$.DOMView, log)

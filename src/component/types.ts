@@ -27,17 +27,17 @@ export interface ComponentSpec<
   __F$__?: [State, Signals, External]
 }
 
-export type Logic<T extends ComponentSpec<any, any, any, any, any, any>> =
+export type Logic<T extends ComponentSpec<any, any, any, any, any, any> = any> =
   (ps: P.LogicParams<T> & { props: Observable<P.SpecToProps<T>> }) => Observable<P.SpecToState<T>>
 
-export type JSXView<T extends ComponentSpec<any, any, any, any, any, any>> =
+export type JSXView<T extends ComponentSpec<any, any, any, any, any, any> = any> =
   (ps: P.ViewParams<T>) => (state: P.SpecToState<T>) => JSX.Element
 
 export type CreateJSXComponent<Spec extends ComponentSpec<any, any, any, any, any, any>
-  = ComponentSpec<any, any, any, any, any, any>> = (spec: Spec,
+  = any> = (spec: Spec,
     view: JSXView<any>, logic: Logic<any>) => (props: P.SpecToProps<Spec>) => JSX.Element // check if props could be removed
 
-export type DOMView<T extends ComponentSpec<any, any, any, any, any, any>> =
+export type DOMView<T extends ComponentSpec<any, any, any, any, any, any> = any> =
   (ps: P.ViewParams<T>) => (state: P.SpecToState<T>) => ReturnType<typeof html>
 
 export type CreateDOMComponent<Spec extends ComponentSpec<any, any, any, any, any, {}>
