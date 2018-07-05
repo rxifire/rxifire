@@ -26,10 +26,10 @@ export interface State {
   pos: Pos
 }
 
-type Spec = F$.ComponentSpec<State, Signals, Pick<ActionsIO, 'randomNumbers'>,
+type Spec = F$.ComponentSpec<State, Signals, Pick<ActionsIO, 'randomNumbers' | 'randomNumber'>,
   Behaviors, 'count' | 'open', { value: string }>
 
-const tasks = fakeTasks({ tickLength: 50 })
+const tasks = fakeTasks({ tickLength: 50 }, { randomNumbers: { inProgressRefire: 'ignore' } })
 
 export const spec: Spec = {
   behaviorsDefaults: {
@@ -58,7 +58,7 @@ const log: F$.Logic<Spec> = ({ beh, sig, tsk, props }) => {
 const jsxView: F$.JSXView<Spec> = ps => (s) => <div>
   <h1>JSX {s.name} or {ps.beh.v('name')} LOGIC: {ps.meta.is('active') + ''}</h1>
   {ps.meta.is('error') && <pre>{JSON.stringify(ps.meta.as('error'), null, 4)}</pre>}
-  {ps.tsk.is('randomNumbers', 'in-progress') && ps.tsk.as('randomNumbers', 'in-progress').update + ' ' + ps.tsk.meta('randomNumbers').status}
+  {ps.tsk.is('randomNumbers', 'success') && ps.tsk.as('randomNumbers', 'success').value + ' RANDOM-NUMs'}
   <div>
 
     <button onClick={ps.sig.fire('click')} >click +1</button>

@@ -64,6 +64,7 @@ export class DOMBridge {
 
   forceUpdate = () => {
     const e = this._s && this._v(this._s) || null
+    console.log('E', e)
     if (e) (render)(e, this.c.el)
   }
 }
