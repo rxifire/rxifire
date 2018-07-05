@@ -1,6 +1,4 @@
-// morphdom used just as an example any rendering mechanism will work
-// lit-html hyperhtml
-import * as morphdom from 'morphdom'
+import { render, html } from 'lit-html'
 
 import { Subscription, tap, animationFrame, observeOn } from '../utils'
 import { SignalsF$, BehaviorsF$, ImmortalF$ } from '../streams'
@@ -66,7 +64,7 @@ export class DOMBridge {
 
   forceUpdate = () => {
     const e = this._s && this._v(this._s) || null
-    if (e) (morphdom as any)(this.c.el, e)
+    if (e) (render)(e, this.c.el)
   }
 }
 

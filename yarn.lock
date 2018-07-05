@@ -24,10 +24,6 @@
   version "23.1.4"
   resolved "https://registry.yarnpkg.com/@types/jest/-/jest-23.1.4.tgz#71e1e2d08b1db742f479ee2795536ebc999a2419"
 
-"@types/morphdom@^2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@types/morphdom/-/morphdom-2.3.0.tgz#5e9fb5b254ff32fc0e6e38da1c7b92aae5687cb3"
-
 "@types/node@*":
   version "10.3.2"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.3.2.tgz#3840ec6c12556fdda6e0e6d036df853101d732a4"
@@ -3418,6 +3414,10 @@ levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
+lit-html@^0.10.2:
+  version "0.10.2"
+  resolved "https://registry.yarnpkg.com/lit-html/-/lit-html-0.10.2.tgz#53c846afcf91bb1e6623179ef22e327ab8ac0e0e"
+
 load-json-file@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/load-json-file/-/load-json-file-1.1.0.tgz#956905708d58b4bab4c2261b04f59f31c99374c0"
@@ -3739,10 +3739,6 @@ mkdirp@0.5.x, mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0:
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
     minimist "0.0.8"
-
-morphdom@^2.3.3:
-  version "2.3.3"
-  resolved "https://registry.yarnpkg.com/morphdom/-/morphdom-2.3.3.tgz#70b0aec3db0832688f7fcbde2a8921cf508c4f16"
 
 move-concurrently@^1.0.1:
   version "1.0.1"
@@ -5442,6 +5438,19 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
+typescript-lit-html-plugin@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/typescript-lit-html-plugin/-/typescript-lit-html-plugin-0.4.1.tgz#6ce21978a8bd0d45d6865df1d5809e5f4b0768bb"
+  dependencies:
+    typescript-template-language-service-decorator "^1.6.1"
+    vscode-css-languageservice "^3.0.9-next.19"
+    vscode-html-languageservice "^2.1.3-next.5"
+    vscode-languageserver-types "^3.8.2"
+
+typescript-template-language-service-decorator@^1.6.1:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/typescript-template-language-service-decorator/-/typescript-template-language-service-decorator-1.6.1.tgz#36396ae5dcae945fc664b5f3ff8660b7ff1de95c"
+
 typescript@^2.9.1:
   version "2.9.1"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.9.1.tgz#fdb19d2c67a15d11995fd15640e373e09ab09961"
@@ -5635,6 +5644,33 @@ vm-browserify@0.0.4:
   resolved "https://registry.yarnpkg.com/vm-browserify/-/vm-browserify-0.0.4.tgz#5d7ea45bbef9e4a6ff65f95438e0a87c357d5a73"
   dependencies:
     indexof "0.0.1"
+
+vscode-css-languageservice@^3.0.9-next.19:
+  version "3.0.9-next.19"
+  resolved "https://registry.yarnpkg.com/vscode-css-languageservice/-/vscode-css-languageservice-3.0.9-next.19.tgz#193b1e0aa87c28d2b0dbe6ddd655bfe10501ae68"
+  dependencies:
+    vscode-languageserver-types "^3.7.2"
+    vscode-nls "^3.2.2"
+
+vscode-html-languageservice@^2.1.3-next.5:
+  version "2.1.3-next.5"
+  resolved "https://registry.yarnpkg.com/vscode-html-languageservice/-/vscode-html-languageservice-2.1.3-next.5.tgz#cfbf4ffed96845ad13999d572ce0b5c2aeee84af"
+  dependencies:
+    vscode-languageserver-types "^3.7.2"
+    vscode-nls "^3.2.2"
+    vscode-uri "^1.0.3"
+
+vscode-languageserver-types@^3.7.2, vscode-languageserver-types@^3.8.2:
+  version "3.8.2"
+  resolved "https://registry.yarnpkg.com/vscode-languageserver-types/-/vscode-languageserver-types-3.8.2.tgz#2550b8d852195328a735c56dbf4e72b8da31613f"
+
+vscode-nls@^3.2.2:
+  version "3.2.4"
+  resolved "https://registry.yarnpkg.com/vscode-nls/-/vscode-nls-3.2.4.tgz#2166b4183c8aea884d20727f5449e62be69fd398"
+
+vscode-uri@^1.0.3:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/vscode-uri/-/vscode-uri-1.0.5.tgz#3b899a8ef71c37f3054d79bdbdda31c7bf36f20d"
 
 w3c-hr-time@^1.0.1:
   version "1.0.1"

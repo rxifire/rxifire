@@ -5,6 +5,8 @@ import * as d3Ease from 'd3-ease'
 import * as F$ from '../../src'
 import { fakeTasks, ActionsIO } from '../tasks'
 
+import { html } from 'lit-html/lib/lit-extended'
+
 const $ = Observable
 
 export type DoB = { day: number, month: number, year: number }
@@ -50,11 +52,11 @@ const log: F$.Logic<Spec> = ({ beh, sig, tsk, props }) => {
     .merge($.timer(2000).mergeMap(() => tsk.fire('randomNumbers')(100)).ignoreElements())
     .delay(1)
     .merge(sig.$('click').do(() => beh.update('count')(x => x + 1)).ignoreElements())
- //   .merge(props.do(p => beh.fire('name')(p.value)).ignoreElements())
+  //   .merge(props.do(p => beh.fire('name')(p.value)).ignoreElements())
 }
 
 const jsxView: F$.JSXView<Spec> = ps => (s) => <div>
-  <h1>HELLO ${s.name} or {ps.beh.v('name')} {ps.meta.is('active') + ''}</h1>
+  <h1>JSX {s.name} or {ps.beh.v('name')} LOGIC: {ps.meta.is('active') + ''}</h1>
   {ps.tsk.is('randomNumbers', 'in-progress') && ps.tsk.as('randomNumbers', 'in-progress').update + ' ' + ps.tsk.meta('randomNumbers').status}
   <div>
 
@@ -70,14 +72,29 @@ const jsxView: F$.JSXView<Spec> = ps => (s) => <div>
 
   <div style={{
     position: 'fixed', backgroundColor: 'green',
-    height: '100vh', width: 200, top: 0, right: (-1 + ps.ani.v('open')) * 200
+    height: '100vh', opacity: 0.5, width: 200, top: 0, right: (-1 + ps.ani.v('open')) * 200
   }}>
   </div>
 </div>
 
 const domView: F$.DOMView<Spec> = ps => s =>
-  `<div>DOM: ${s.name} ---
-  ${ps.tsk.is('randomNumbers', 'in-progress') && ps.tsk.as('randomNumbers', 'in-progress').update}</div>`
+  html`<div>
+  <h1>DOM ${s.name} or ${ps.beh.v('name')} LOGIC: ${ps.meta.is('active') + ''}</h1>
+  <div>
+    ${ps.tsk.is('randomNumbers', 'in-progress') && ps.tsk.as('randomNumbers', 'in-progress').update + ' ' + ps.tsk.meta('randomNumbers').status}
+    <button on-click="${ps.sig.fire('click')}">click +1</button>
+    ${ps.beh.v('count')}
+    <br />
+    <button on-click="${() => ps.beh.update('open')(o => !o)}">toggle</button>
+    ${`is open: ${ps.beh.v('open')}?`}
+    <br /> ${(ps.ani as any).v('open')}
+    <br />
+  </div>
+
+  <div style="position:fixed;opacity:0.5;background-color:blue;height:100vh;width:200px;top:0;
+    right: ${(-1 + ps.ani.v('open')) * 200}px">
+  </div>
+</div>`
 
 export const JSXComp = F$.createJSXComponent(spec, jsxView as any, log)
 

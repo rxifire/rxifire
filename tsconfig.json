@@ -1,14 +1,19 @@
 {
-  "compilerOptions": {
-      "outDir": "./dist",
-      "sourceMap": true,
-      "strict": true,
-      "module": "commonjs",
-      "target": "es6",
-      "jsx": "react"
-  },
-  "include": [
-      "./src/**/*",
-      "./demo/**/*"
-  ]
+    "compilerOptions": {
+        "outDir": "./dist",
+        "sourceMap": true,
+        "strict": true,
+        "module": "commonjs",
+        "target": "es6",
+        "jsx": "react",
+        "plugins": [
+            {
+                "name": "typescript-lit-html-plugin"
+            }
+        ]
+    },
+    "include": [
+        "./src/**/*",
+        "./demo/**/*"
+    ]
 }
