@@ -42,7 +42,7 @@ export const spec: Spec = {
   }
 }
 
-const log: F$.JSXLogic<Spec> = ({ beh, sig, tsk, props }) => {
+const log: F$.Logic<Spec> = ({ beh, sig, tsk, props }) => {
   beh.$('dob')
   sig.$('click')
   return Observable.of({ name: 'ab', pos: { x: 0, y: 0 } })
@@ -50,10 +50,10 @@ const log: F$.JSXLogic<Spec> = ({ beh, sig, tsk, props }) => {
     .merge($.timer(2000).mergeMap(() => tsk.fire('randomNumbers')(100)).ignoreElements())
     .delay(1)
     .merge(sig.$('click').do(() => beh.update('count')(x => x + 1)).ignoreElements())
-    .merge(props.do(p => beh.fire('name')(p.value)).ignoreElements())
+ //   .merge(props.do(p => beh.fire('name')(p.value)).ignoreElements())
 }
 
-const view: F$.JSXView<Spec> = ps => (s) => <div>
+const jsxView: F$.JSXView<Spec> = ps => (s) => <div>
   <h1>HELLO ${s.name} or {ps.beh.v('name')} {ps.meta.is('active') + ''}</h1>
   {ps.tsk.is('randomNumbers', 'in-progress') && ps.tsk.as('randomNumbers', 'in-progress').update + ' ' + ps.tsk.meta('randomNumbers').status}
   <div>
@@ -75,4 +75,10 @@ const view: F$.JSXView<Spec> = ps => (s) => <div>
   </div>
 </div>
 
-export const Comp = F$.createJSXComponent(spec, view as any, log)
+const domView: F$.DOMView<Spec> = ps => s =>
+  `<div>DOM: ${s.name} ---
+  ${ps.tsk.is('randomNumbers', 'in-progress') && ps.tsk.as('randomNumbers', 'in-progress').update}</div>`
+
+export const JSXComp = F$.createJSXComponent(spec, jsxView as any, log)
+
+export const DOMComp = F$.createDOMComponent(spec, domView as any, log)

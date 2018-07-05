@@ -1,10 +1,10 @@
 import * as React from 'react'
-import { BehaviorSubject, Subscription, Observable, tap, animationFrame, observeOn } from '../utils'
+import { BehaviorSubject, Subscription, tap, animationFrame, observeOn } from '../utils'
 import { SignalsF$, BehaviorsF$, ImmortalF$ } from '../streams'
-import { CreateJSXComponent, JSXLogic, ComponentSpec, JSXView } from './types'
+import { CreateJSXComponent, Logic, ComponentSpec, JSXView } from './types'
 
 type Config = {
-  spec: ComponentSpec<any, any, any, any, any, any>, logic: JSXLogic<any>, view: JSXView<any>
+  spec: ComponentSpec<any, any, any, any, any, any>, logic: Logic<any>, view: JSXView<any>
 }
 
 const tangle = ({ spec, logic, view }: Config, external?: any) => {

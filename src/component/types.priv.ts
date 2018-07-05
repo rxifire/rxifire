@@ -7,6 +7,7 @@ type Spec = ComponentSpec<any, any, any, any, any, any>
 export type SpecToState<T extends Spec> = NonNullable<T['__F$__']>[0]
 export type SpecToSig<T extends Spec> = NonNullable<T['__F$__']>[1]
 export type SpecToExt<T extends Spec> = NonNullable<T['__F$__']>[2]
+export type SpecToProps<T extends Spec> = SpecToExt<T>
 
 export type Animate<Behaviors extends {}, Ks extends keyof Behaviors = never> = {
   [K in Ks]: Behaviors[K] extends boolean ? (v: Observable<boolean>) => Observable<number> :
@@ -34,5 +35,3 @@ export type ViewParams<T extends Spec> =
   (T['animate'] extends undefined ? {} : { ani: AnimateToView<NonNullable<T['animate']>> }) &
   (T['behaviorsDefaults'] extends undefined ? {} : { beh: Pick<BehaviorsF$<NonNullable<T['behaviorsDefaults']>>, Exclude<keyof BehaviorsF$<Required<T['behaviorsDefaults']>>, '$' | '$s'>> }) &
   ({ meta: Pick<ImmortalF$<any, SpecToState<T>>, 'is' | 'as'> })
-
-export type SpecToProps<T extends Spec> = SpecToExt<T>

@@ -3,8 +3,10 @@ import 'rxjs-compat'
 import * as React from 'react'
 import * as ReactDom from 'react-dom'
 
-import { Comp } from './KitchenSink'
+import { JSXComp, DOMComp } from './KitchenSink'
 
-ReactDom.render(<Comp value='START' />, document.getElementById('root'))
+DOMComp(document.getElementById('root-dom')!, {})
+
+ReactDom.render(<JSXComp value='START' />, document.getElementById('root-jsx'))
 setTimeout(() =>
-  ReactDom.render(<Comp value='UPDATED' />, document.getElementById('root')), 5000)
+  ReactDom.render(<JSXComp value='UPDATED' />, document.getElementById('root-jsx')), 5000)
