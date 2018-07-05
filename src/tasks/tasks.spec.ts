@@ -206,7 +206,7 @@ test('actions - stop-then-refire', () =>
 )
 
 test('actions - reset', () => {
-  ctr = new TasksF$(acts, spec, () => Date.now())
+  ctr = new TasksF$(acts, {}, () => Date.now())
   expect(ctr.meta('obs').status === 'idle').toBe(true)
   ctr.fire('obs')('').toPromise()
   expect(ctr.meta('obs').status === 'in-progress').toBe(true)

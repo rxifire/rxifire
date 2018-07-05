@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Observable } from 'rxjs'
+import * as d3Ease from 'd3-ease'
 
 import * as F$ from '../../src'
 import { fakeTasks, ActionsIO } from '../tasks'
@@ -36,7 +37,7 @@ export const spec: Spec = {
   animate: {
     count: (a) => a.map(n => n),
     open: o => o.map(v => v ? 1 : 0).pipe(F$.boundedAnimation({
-      min: 0, max: 1, duration: 200, easing: F$.easing.easeInQuint
+      min: 0, max: 1, duration: 200, easing: d3Ease.easeSinInOut
     }))
   }
 }

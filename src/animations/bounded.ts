@@ -33,7 +33,7 @@ export const boundedAnimation = (cfg: BoundedAnimationConfig, scheduler = animat
           const to: Progress = toP(v)
           const dir = to > progress ? 1 / cfg.duration : -1 / cfg.duration
           let last = scheduler.now()
-          return $.timer(0, 0)
+          return $.timer(0, 17)
             .pipe(
               observeOn(scheduler),
               takeWhile(() => progress !== to),
@@ -44,8 +44,6 @@ export const boundedAnimation = (cfg: BoundedAnimationConfig, scheduler = animat
                 last = now
                 return p
               })
-              // this does not make much sense with proper requestAnimationFrame
-              // filter(p => p !== progress)
             )
         })
       )

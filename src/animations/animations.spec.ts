@@ -35,7 +35,6 @@ describe('bounded', () => {
       .let(boundedAnimation({
         min: 0, max: 100, duration: 220, easing: t => t
       }))
-      .do(x => console.log('X', x))
       .filter(x => x === 0 || x === 100 || x === 75)
       .take(3)
       .toArray()
