@@ -1,6 +1,6 @@
 import { render } from 'lit-html'
 
-import { Subscription, tap, animationFrame, observeOn, Observable, merge } from '../utils'
+import { Subscription, tap, Observable, merge } from '../utils'
 import { CreateDOMComponent, Logic, ComponentSpec, DOMView } from './types'
 import { ctrl } from './component-ctrl'
 

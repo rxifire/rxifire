@@ -1,4 +1,4 @@
-import { map, tap } from '../utils'
+import { tap, Observable } from '../utils'
 import { SignalsF$, BehaviorsF$, ImmortalF$ } from '../streams'
 import { Logic, ComponentSpec } from './types'
 
@@ -29,6 +29,5 @@ export const ctrl = (c: Config) => {
       ))
   }
 
-  return [log.run, v, streams]
-
+  return [log.run, v, streams] as [Observable<any>, (s: any) => any, Observable<any>[]]
 }
