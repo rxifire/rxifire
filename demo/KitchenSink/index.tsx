@@ -57,6 +57,7 @@ const log: F$.Logic<Spec> = ({ beh, sig, tsk, props }) => {
 
 const jsxView: F$.JSXView<Spec> = ps => (s) => <div>
   <h1>JSX {s.name} or {ps.beh.v('name')} LOGIC: {ps.meta.is('active') + ''}</h1>
+  {ps.meta.is('error') && <pre>{JSON.stringify(ps.meta.as('error'), null, 4)}</pre>}
   {ps.tsk.is('randomNumbers', 'in-progress') && ps.tsk.as('randomNumbers', 'in-progress').update + ' ' + ps.tsk.meta('randomNumbers').status}
   <div>
 
