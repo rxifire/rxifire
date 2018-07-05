@@ -53,7 +53,7 @@ export class JSXBridge extends React.Component<{ props: any, config: Config }> {
     if (ani) {
       const ks = Object.keys(this.props.config.spec.animate!)
       const bs = beh!.$s(ks as any)
-      console.log(bs, ks, ani, this.props.config.spec.animate)
+
       ks.forEach(k => this.sub.add(
         (bs as any)[k]
           .pipe(

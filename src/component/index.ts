@@ -1,2 +1,2 @@
 export * from './jsx-component'
-export * from './dom-component'
+export * from './lit-component'

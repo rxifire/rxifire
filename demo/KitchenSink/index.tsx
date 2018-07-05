@@ -78,8 +78,8 @@ const jsxView: F$.JSXView<Spec> = ps => (s) => <div>
   </div>
 </div>
 
-const domView: F$.DOMView<Spec> = ps => s =>
-  html`<div>
+const domView: F$.DOMView<Spec> = ps => s => {
+  return html`<div>
   <h1>DOM ${s.name} or ${ps.beh.v('name')} LOGIC: ${ps.meta.is('active') + ''}</h1>
   <div>
     ${ps.tsk.is('randomNumbers', 'in-progress') && ps.tsk.as('randomNumbers', 'in-progress').update + ' ' + ps.tsk.meta('randomNumbers').status}
@@ -88,7 +88,7 @@ const domView: F$.DOMView<Spec> = ps => s =>
     <br />
     <button on-click="${() => ps.beh.update('open')(o => !o)}">toggle</button>
     ${`is open: ${ps.beh.v('open')}?`}
-    <br /> ${(ps.ani as any).v('open')}
+    <br /> ${ps.ani.v('open')}
     <br />
   </div>
 
@@ -96,6 +96,7 @@ const domView: F$.DOMView<Spec> = ps => s =>
     right: ${(-1 + ps.ani.v('open')) * 200}px">
   </div>
 </div>`
+}
 
 export const JSXComp = F$.createJSXComponent(spec, jsxView as F$.JSXView, log)
 
