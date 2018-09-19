@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as ReactDOM from 'react-dom'
 import { BehaviorSubject, Subscription, Observable, merge, tap } from '../utils'
 import { CreateJSXComponent, Logic, ComponentSpec, JSXView } from './types'
 import { ctrl } from './component-ctrl'
@@ -23,6 +24,7 @@ export class JSXBridge extends React.Component<{ props: any, config: Config }> {
   }
 
   componentDidMount () {
+    console.log(ReactDOM.findDOMNode(this))
     const [state, viewFn, streams] = ctrl(Object.assign({ ext: { props: this._ps } }, this.props.config))
     this._v = viewFn
     this.sub = merge(
@@ -43,7 +45,7 @@ export class JSXBridge extends React.Component<{ props: any, config: Config }> {
     this.sub.unsubscribe()
   }
 
-  render () { return this._s && this._v(this._s) || null }
+  render () { return this._s && this._v(this._s) || <div></div> }
 }
 
 export const createJSXComponent: CreateJSXComponent = (spec, view, logic) => (props) => {

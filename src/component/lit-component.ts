@@ -1,7 +1,7 @@
 import { render } from 'lit-html'
 
 import { Subscription, tap, Observable, merge } from '../utils'
-import { CreateDOMComponent, Logic, ComponentSpec, DOMView } from './types'
+import { CreateLitComponent, Logic, ComponentSpec, DOMView } from './types'
 import { ctrl } from './component-ctrl'
 
 type Config = {
@@ -36,5 +36,5 @@ export class DOMBridge {
   }
 }
 
-export const createDOMComponent: CreateDOMComponent = (spec, view, logic) => (el, ext) =>
+export const createLitComponent: CreateLitComponent = (spec, view, logic) => (el, ext) =>
   new DOMBridge({ el, ext, spec, view, logic })

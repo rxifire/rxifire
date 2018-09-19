@@ -6,6 +6,7 @@ import * as F$ from '../../src'
 import { fakeTasks, ActionsIO } from '../tasks'
 
 import { html } from 'lit-html/lib/lit-extended'
+import { directive } from 'lit-html'
 
 const $ = Observable
 
@@ -55,7 +56,7 @@ const log: F$.Logic<Spec> = ({ beh, sig, tsk, props }) => {
   //   .merge(props.do(p => beh.fire('name')(p.value)).ignoreElements())
 }
 
-const jsxView: F$.JSXView<Spec> = ps => (s) => <div>
+const jsxView: F$.JSXView<Spec> = ps => (s) => <div id='jsx-root'>
   <h1>JSX {s.name} or {ps.beh.v('name')} LOGIC: {ps.meta.is('active') + ''}</h1>
   {ps.meta.is('error') && <pre>{JSON.stringify(ps.meta.as('error'), null, 4)}</pre>}
   {ps.tsk.is('randomNumbers', 'success') && ps.tsk.as('randomNumbers', 'success').value + ' RANDOM-NUMs'}
@@ -92,6 +93,8 @@ const domView: F$.DOMView<Spec> = ps => s => {
     <br />
   </div>
 
+  <div>
+
   <div style="position:fixed;opacity:0.5;background-color:blue;height:100vh;width:200px;top:0;
     right: ${(-1 + ps.ani.v('open')) * 200}px">
   </div>
@@ -100,4 +103,4 @@ const domView: F$.DOMView<Spec> = ps => s => {
 
 export const JSXComp = F$.createJSXComponent(spec, jsxView as F$.JSXView, log)
 
-export const DOMComp = F$.createDOMComponent(spec, domView as F$.DOMView, log)
+export const DOMComp = F$.createLitComponent(spec, domView as F$.DOMView, log)

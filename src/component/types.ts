@@ -40,6 +40,6 @@ export type CreateJSXComponent<Spec extends ComponentSpec<any, any, any, any, an
 export type DOMView<T extends ComponentSpec<any, any, any, any, any, any> = any> =
   (ps: P.ViewParams<T>) => (state: P.SpecToState<T>) => ReturnType<typeof html>
 
-export type CreateDOMComponent<Spec extends ComponentSpec<any, any, any, any, any, {}>
+export type CreateLitComponent<Spec extends ComponentSpec<any, any, any, any, any, {}>
   = ComponentSpec<any, any, any, any, any, {}>> = (spec: Spec,
     view: DOMView<any>, logic: Logic<any>) => (root: HTMLElement, ext: P.SpecToExt<Spec>) => void
